@@ -172,3 +172,21 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# pycharm
+.idea/
+
+# ubuntu lock files
+*.~lock.*
+
+# default LaTeX build directory
+out/*
+auxil/*
+*.glo
+*.ist
+
+# doctree files for sphinx build
+/docs/.doctrees/
+
+# sphinx autoapi build files
+/docs_build/autoapi/
