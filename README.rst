@@ -1,5 +1,4 @@
 komanawa-easy-nc-accessor
 ###################################
 
-created with api
-
+documentation is available at:  .. todo once there is a docs build
