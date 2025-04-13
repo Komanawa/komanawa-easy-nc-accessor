@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src/"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt"]
+
+[project]
+name = "komanawa-easy-nc-accessor"
+dynamic = ["version"] # version set in version.py
+authors = [
+    { name = "Matt Dumont", email = "Matt@komanawa.com" },
+]
+description = "" # todo
+readme = "README.rst"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License", # todo remove for non-open source projects
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "komanawa.easy_nc_accessor.version.__version__"}
+
+[project.urls]
+Homepage = "https://github.com/Komanawa/komanawa-easy-nc-accessor"
+Issues = "https://github.com/Komanawa/komanawa-easy-nc-accessor/issues"
+Documentation = "https://github.com/Komanawa/komanawa-easy-nc-accessor" # todo
