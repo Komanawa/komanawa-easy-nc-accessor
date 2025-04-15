@@ -1,0 +1,3 @@
+<map id="inheritance7cd5e76054" name="inheritance7cd5e76054">
+<area shape="rect" id="node1" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor" target="_top" title="This supports easy access to compressed spatial datasets. &#160;That is data which has n dimensions with only 1 dimension of space. &#160;For example, this could be a 2d Dataset of time, space. &#160;Where the &quot;space&quot; dimension has point values (e.g. unique x,y). &#160;This is opposed to an uncompressed spatial dataset which would have n dimensions with 2 dimensions of space (x, y)" alt="" coords="5,5,212,31"/>
+</map>

@@ -32,7 +32,7 @@ class _common_functions:
         assert len(data) > 0, 'no features found in shapefile'
         assert data.crs is not None, 'no crs found in shapefile'
         shp_epsg = pyproj.CRS(data.crs).to_epsg()
-        if shp_epsg != self.self.epsg_num:
+        if shp_epsg != self.epsg_num:
             raise ValueError(f'epsg of shapefile {shp_epsg} does not match model epsg {self.epsg_num}'
                              f'If you think this is wrong set check_crs=False, pyproj can do silly things sometimes')
 
@@ -56,8 +56,22 @@ class _common_functions:
 
 class TileIndexAccessor(_common_functions):
     """
-    This is a base class for tile index accessors. It is not meant to be used directly, but rather as a base class
-    for other accessors that will inherit from it.
+    Support to select geospatial tiles from a directory of netcdf files.  The netcdf files must have the following attributes:
+
+    * xmin: the minimum x coordinate of the tile
+    * ymin: the minimum y coordinate of the tile
+    * xmax: the maximum x coordinate of the tile
+    * ymax: the maximum y coordinate of the tile
+
+    The netcdf files can have the following attributes:
+
+    * tile_number: the tile number
+    * start_date: the start date of the tile (inclusive)
+    * end_date: the end date of the tile (inclusive)
+
+    All NetCDF files within the directory and it's children are searched for the above attributes.
+
+    The key mechanism is to create a tile index from the netcdf files in the directory and then return a dataframe of the tiles that fall within a bounding box, shapefile for all datasets. The end user can then do subsequent filtering based on the other parameters (e.g. tile number, start date, and end date)
     """
     epsg_num = 2193
 
@@ -78,6 +92,7 @@ class TileIndexAccessor(_common_functions):
     def get_index(self, recalc=False):
         """
         get / make a tile index from the netcdf files in the data_dir
+
         :return: dataframe of all tiles that fall within the shapefile. columns are:
 
             * 'tile_path': path of the tile relative to the data_dir
@@ -86,8 +101,8 @@ class TileIndexAccessor(_common_functions):
             * 'tile_ymin': the minimum y coordinate of the tile
             * 'tile_xmax': the maximum x coordinate of the tile
             * 'tile_ymax': the maximum y coordinate of the tile
-            * 'start_date': the start date of the tile (inclusive)
-            * 'end_date': the end date of the tile (inclusive)
+            * 'start_date': the start date of the tile (inclusive) This can be missing without causing an exception
+            * 'end_date': the end date of the tile (inclusive) This can be missing without causing an exception
         """
 
         if self.save_index_path.exists() and not recalc:
@@ -97,6 +112,7 @@ class TileIndexAccessor(_common_functions):
 
             # make the index
             ncfiles = list(self.data_dir.glob('**/*.nc'))
+            ncfiles = list(sorted(ncfiles))
             assert len(ncfiles) > 0, f'{self.save_index_path} does not contain any .nc files, check the path'
 
             data = pd.DataFrame(index=range(len(ncfiles)),
@@ -114,10 +130,16 @@ class TileIndexAccessor(_common_functions):
                             data.loc[i, f'tile_{k}'] = ds.getncattr(k)
                         except KeyError:
                             raise KeyError(f'{k} not found in {f}')
-                start_date = getattr(ds, 'start_date', None)
-                end_date = getattr(ds, 'end_date', None)
-                data.loc[i, 'start_date'] = start_date
-                data.loc[i, 'end_date'] = end_date
+                    start_date = getattr(ds, 'start_date', None)
+                    end_date = getattr(ds, 'end_date', None)
+                    data.loc[i, 'start_date'] = start_date
+                    data.loc[i, 'end_date'] = end_date
+
+            data[['tile_xmin', 'tile_ymin', 'tile_xmax', 'tile_ymax']] = data[
+                ['tile_xmin', 'tile_ymin', 'tile_xmax', 'tile_ymax']].astype(float)
+            data[['tile_number']] = data[['tile_number']].astype(int)
+            data[['start_date', 'end_date', 'tile_path']] = data[['start_date', 'end_date', 'tile_path']].astype(str)
+
             data.to_hdf(self.save_index_path, key='index')
 
         # transform the tile_path to a Path object and convert the dates to datetime objects
@@ -129,18 +151,19 @@ class TileIndexAccessor(_common_functions):
     def get_tiles_from_extent(self, xs, ys):
         """
         get the tile paths from a bounding box
+
         :param xs: the x coordinates of the bounding box / extent.  the min/max of the passed x coordinates are used
         :param ys: the y coordinates of the bounding box / extent.  the min/max of the passed y coordinates are used
         :return: dataframe of all tiles that fall within the shapefile. columns are:
 
-            * 'tile_path': pathlib.Path to the tile relative to the data_dir
+            * 'tile_path': pathlib.Path to the tile
             * 'tile_number': the tile number.  This can be missing without causing an exception
             * 'tile_xmin': the minimum x coordinate of the tile
             * 'tile_ymin': the minimum y coordinate of the tile
             * 'tile_xmax': the maximum x coordinate of the tile
             * 'tile_ymax': the maximum y coordinate of the tile
-            * 'start_date': the start date of the tile (inclusive)
-            * 'end_date': the end date of the tile (inclusive)
+            * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+            * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
         """
         xmin = np.min(xs)
         xmax = np.max(xs)
@@ -161,18 +184,19 @@ class TileIndexAccessor(_common_functions):
     def get_tiles_from_shapefile(self, shapefile_path, check_crs=True):
         """
         get the tile paths from a shapefile
+
         :param shapefile_path: path to the shapefile
         :param check_crs: boolean if True check the crs of the shapefile
         :return: dataframe of all tiles that fall within the shapefile. columns are:
 
-            * 'tile_path': pathlib.Path to the tile relative to the data_dir
+            * 'tile_path': pathlib.Path to the tile
             * 'tile_number': the tile number.  This can be missing without causing an exception
             * 'tile_xmin': the minimum x coordinate of the tile
             * 'tile_ymin': the minimum y coordinate of the tile
             * 'tile_xmax': the maximum x coordinate of the tile
             * 'tile_ymax': the maximum y coordinate of the tile
-            * 'start_date': the start date of the tile (inclusive)
-            * 'end_date': the end date of the tile (inclusive)
+            * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+            * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
         """
 
         if check_crs:
@@ -378,7 +402,7 @@ class _BaseAccessor(_common_functions):
         :param cbar_lab: string to label the cbar
         :param contour: boolean if true print black contours on the map
         :param norm: None or matplotlib.colors.Normalize, if None then no normalisation is applied (other than vmin/vmax)
-        :param contour_levels: see levels in matplotlib.pyplot.contour, or float/int, If float/int then contour levels are calculated from array.min()//level*level to array.max()//level *level
+        :param contour_levels: see levels in matplotlib.pyplot.contour, or float/int, If float/int then contour levels are calculated from array.min()//level x level to array.max()//level x level
         :param cmap: color map to use
         :param label_contours: boolean if true then print labels in line with the contours
         :param contour_label_format: format for the contour label (see fmt in plt.clabel)
@@ -387,6 +411,9 @@ class _BaseAccessor(_common_functions):
 
         :return: fig, ax
         """
+        if base_map_path:
+            base_map_path = Path(base_map_path)
+            assert base_map_path.exists(), f'base_map_path {base_map_path} does not exist'
         default_alpha = 1 if base_map_path is None else 0.5
         alpha = kwargs.pop('alpha', default_alpha)
 
@@ -618,7 +645,8 @@ class CompressedSpatialAccessor(_BaseAccessor):
     def spatial_1d_to_spatial_2d(self, array, missing_value=np.nan):
         """
         convert a 1d (collapsed) spatial array to a 2d spatial array
-        :param array:
+
+        :param array:  1d array to convert
         :param missing_value: value to use for missing values (to support integer arrays)
         :return: array (self.spatial_2d_shape)
         """
@@ -640,8 +668,9 @@ class CompressedSpatialAccessor(_BaseAccessor):
     def spatial_2d_to_spatial_1d(self, array):
         """
         convert a 2d spatial array to a 1d (collapsed) spatial array
-        :param array:
-        :return:
+
+        :param array: 2d array to convert
+        :return: array (1d)
         """
         assert array.shape == self.spatial_2d_shape, f'{array.shape=} must match {self.spatial_2d_shape=}'
         active_index = self.get_active_index()
@@ -651,6 +680,7 @@ class CompressedSpatialAccessor(_BaseAccessor):
     def get_closest_loc_to_point(self, nztmx, nztmy, coords_out_domain='raise'):
         """
         get the closest spatial index(s) to a point in the spatial domain
+
         :param nztmx: single or array of x coordinates
         :param nztmy: single or array of y coordinates
         :param coords_out_domain: ['raise', 'coerce' or 'pass'].  What to do if the coordinates are outside the domain

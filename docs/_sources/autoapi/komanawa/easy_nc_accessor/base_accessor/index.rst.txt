@@ -1,0 +1,285 @@
+komanawa.easy_nc_accessor.base_accessor
+=======================================
+
+.. py:module:: komanawa.easy_nc_accessor.base_accessor
+
+.. autoapi-nested-parse::
+
+   created matt_dumont 
+   on: 4/13/25
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor
+   komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor
+
+
+Module Contents
+---------------
+
+.. py:class:: CompressedSpatialAccessor(datapath, active_index_name='active_index', grid_x_name='grid_x', grid_y_name='grid_y', loc_x_name='x', loc_y_name='y')
+
+   Bases: :py:obj:`_BaseAccessor`
+
+   .. autoapi-inheritance-diagram:: komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor
+      :parts: 1
+
+
+   This supports easy access to compressed spatial datasets.  That is data which has n dimensions with only 1 dimension of space.  For example, this could be a 2d Dataset of time, space.  Where the "space" dimension has point values (e.g. unique x,y).  This is opposed to an uncompressed spatial dataset which would have n dimensions with 2 dimensions of space (x, y)
+
+   :param datapath: path to the netcdf file
+   :param active_index_name: name of the active index variable in the netcdf file
+   :param grid_x_name: name of the grid x variable in the netcdf file
+   :param grid_y_name: name of the grid y variable in the netcdf file
+   :param loc_x_name: name of the x location variable in the netcdf file (to support compressed spatial dimensions)
+   :param loc_y_name: name of the y location variable in the netcdf file (to support compressed spatial dimensions)
+
+
+   .. py:method:: check_raster_crs(raster_path)
+
+      check the crs of a raster
+
+      :param raster_path: path to raster
+      :return:
+
+
+
+   .. py:method:: check_shape_crs(shapefile_path=None, shapefile=None)
+
+      check the crs of a shapefile
+
+      :param shapefile_path: path to shapefile
+      :param shapefile: shapefile object (geodataframe/geoseries), note shapely geometries do not have a crs
+      :return: None
+
+
+
+   .. py:method:: close(fig=None)
+      :staticmethod:
+
+
+      a shortcut to be able to close plots without importing matplotlib.pyplot
+
+      :param fig: see matplotlib.pyplot.close()
+      :return:
+
+
+
+   .. py:method:: get_2d_spatial_zero(dtype=float)
+
+      get a 2d array of zeros with the same shape as the spatial 2d shape
+
+      :param dtype: data type of the array
+      :return:
+
+
+
+   .. py:method:: get_active_index()
+
+      read the active index of the dataset, this is a boolean 2d array of the same shape as the spatial 2d shape.
+
+      True = has data, False = no data
+
+      :return:
+
+
+
+   .. py:method:: get_closest_loc_to_point(nztmx, nztmy, coords_out_domain='raise')
+
+      get the closest spatial index(s) to a point in the spatial domain
+
+      :param nztmx: single or array of x coordinates
+      :param nztmy: single or array of y coordinates
+      :param coords_out_domain: ['raise', 'coerce' or 'pass'].  What to do if the coordinates are outside the domain
+
+      - 'raise': raise a ValueError
+      - 'coerce': return -1 for out of domain coords (note that this may still be a valid index, so care must be taken)
+      - 'pass': returns the closest index, but this may be WELL outside the domain
+
+
+      :return: index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points
+
+
+
+   .. py:method:: get_xlim_ylim()
+
+      read the dataset spatial limits
+
+      :return:  x_min, x_max, y_min, y_max
+
+
+
+   .. py:method:: plot_2d(array, vmin=None, vmax=None, title=None, ax=None, color_bar=True, base_map_path=None, cbar_lab=None, cbarlabelpad=15, contour=False, norm=None, contour_levels=None, cmap='plasma', label_contours=False, contour_label_format='%1.1f', figsize=(10, 10), **kwargs)
+
+      Plot a 2D array with a color map and optional contours.
+
+      :param array: they array to plot (of i,j)
+      :param vmin: vmin to pass to the plot, None, number (as per matplotlib), str (e.g., 1th, 1st, 5th), the percentile to use
+      :param vmax: vmax to pass to the plot, None, number (as per matplotlib), str (e.g., 1th, 1st, 5th), the percentile to use
+      :param title: a title to include on the plot
+      :param ax: None or a matplotlib ax to plot on top of, not frequently used (execpt in subplots)
+      :param color_bar: Boolean if true plot a color bar scale
+      :param base_map_path: None or a path to a raster basemap to plot under the data. if the raster is RGB then it is transformed to grayscale.
+      :param cbar_lab: string to label the cbar
+      :param contour: boolean if true print black contours on the map
+      :param norm: None or matplotlib.colors.Normalize, if None then no normalisation is applied (other than vmin/vmax)
+      :param contour_levels: see levels in matplotlib.pyplot.contour, or float/int, If float/int then contour levels are calculated from array.min()//level x level to array.max()//level x level
+      :param cmap: color map to use
+      :param label_contours: boolean if true then print labels in line with the contours
+      :param contour_label_format: format for the contour label (see fmt in plt.clabel)
+      :param figsize: figsize (ignored if ax is not None)
+      :param kwargs: additional kwargs to plot to pass to pcolormesh
+
+      :return: fig, ax
+
+
+
+   .. py:method:: show()
+      :staticmethod:
+
+
+      a shortcut to be able to show plots without importing matplotlib.pyplot
+
+      :return:
+
+
+
+   .. py:method:: spatial_1d_to_spatial_2d(array, missing_value=np.nan)
+
+      convert a 1d (collapsed) spatial array to a 2d spatial array
+
+      :param array:  1d array to convert
+      :param missing_value: value to use for missing values (to support integer arrays)
+      :return: array (self.spatial_2d_shape)
+
+
+
+   .. py:method:: spatial_2d_to_raster(path, array, dtype=np.float32, compression=True)
+
+      saves a 2d array as a raster geotiff file
+
+      :param path: path to save the raster
+      :param array: array to save (must be 2d model array)
+      :param dtype: gdal data type to save as
+      :param compression: boolean if True use compression (LZW, options = 'COMPRESS=LZW', 'PREDICTOR={p}', 'TILED=YES') where p=2 for int and 3 for float
+      :return:
+
+
+
+   .. py:method:: spatial_2d_to_spatial_1d(array)
+
+      convert a 2d spatial array to a 1d (collapsed) spatial array
+
+      :param array: 2d array to convert
+      :return: array (1d)
+
+
+
+.. py:class:: TileIndexAccessor(data_dir, save_index_path)
+
+   Bases: :py:obj:`_common_functions`
+
+   .. autoapi-inheritance-diagram:: komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor
+      :parts: 1
+
+
+   Support to select geospatial tiles from a directory of netcdf files.  The netcdf files must have the following attributes:
+
+   * xmin: the minimum x coordinate of the tile
+   * ymin: the minimum y coordinate of the tile
+   * xmax: the maximum x coordinate of the tile
+   * ymax: the maximum y coordinate of the tile
+
+   The netcdf files can have the following attributes:
+
+   * tile_number: the tile number
+   * start_date: the start date of the tile (inclusive)
+   * end_date: the end date of the tile (inclusive)
+
+   All NetCDF files within the directory and it's children are searched for the above attributes.
+
+   The key mechanism is to create a tile index from the netcdf files in the directory and then return a dataframe of the tiles that fall within a bounding box, shapefile for all datasets. The end user can then do subsequent filtering based on the other parameters (e.g. tile number, start date, and end date)
+
+   :param data_dir: path to the directory containing the netcdf files
+   :param save_index_path: path to save the index file
+
+
+   .. py:method:: check_raster_crs(raster_path)
+
+      check the crs of a raster
+
+      :param raster_path: path to raster
+      :return:
+
+
+
+   .. py:method:: check_shape_crs(shapefile_path=None, shapefile=None)
+
+      check the crs of a shapefile
+
+      :param shapefile_path: path to shapefile
+      :param shapefile: shapefile object (geodataframe/geoseries), note shapely geometries do not have a crs
+      :return: None
+
+
+
+   .. py:method:: get_index(recalc=False)
+
+      get / make a tile index from the netcdf files in the data_dir
+
+      :return: dataframe of all tiles that fall within the shapefile. columns are:
+
+          * 'tile_path': path of the tile relative to the data_dir
+          * 'tile_number': the tile number.  This can be missing without causing an exception
+          * 'tile_xmin': the minimum x coordinate of the tile
+          * 'tile_ymin': the minimum y coordinate of the tile
+          * 'tile_xmax': the maximum x coordinate of the tile
+          * 'tile_ymax': the maximum y coordinate of the tile
+          * 'start_date': the start date of the tile (inclusive) This can be missing without causing an exception
+          * 'end_date': the end date of the tile (inclusive) This can be missing without causing an exception
+
+
+
+   .. py:method:: get_tiles_from_extent(xs, ys)
+
+      get the tile paths from a bounding box
+
+      :param xs: the x coordinates of the bounding box / extent.  the min/max of the passed x coordinates are used
+      :param ys: the y coordinates of the bounding box / extent.  the min/max of the passed y coordinates are used
+      :return: dataframe of all tiles that fall within the shapefile. columns are:
+
+          * 'tile_path': pathlib.Path to the tile
+          * 'tile_number': the tile number.  This can be missing without causing an exception
+          * 'tile_xmin': the minimum x coordinate of the tile
+          * 'tile_ymin': the minimum y coordinate of the tile
+          * 'tile_xmax': the maximum x coordinate of the tile
+          * 'tile_ymax': the maximum y coordinate of the tile
+          * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+          * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
+
+
+
+   .. py:method:: get_tiles_from_shapefile(shapefile_path, check_crs=True)
+
+      get the tile paths from a shapefile
+
+      :param shapefile_path: path to the shapefile
+      :param check_crs: boolean if True check the crs of the shapefile
+      :return: dataframe of all tiles that fall within the shapefile. columns are:
+
+          * 'tile_path': pathlib.Path to the tile
+          * 'tile_number': the tile number.  This can be missing without causing an exception
+          * 'tile_xmin': the minimum x coordinate of the tile
+          * 'tile_ymin': the minimum y coordinate of the tile
+          * 'tile_xmax': the maximum x coordinate of the tile
+          * 'tile_ymax': the maximum y coordinate of the tile
+          * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+          * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
+
+
+
