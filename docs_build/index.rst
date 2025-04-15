@@ -162,11 +162,152 @@ Basically, the NetCDF4 package stores self documenting N-dimensional data in a b
 
 The dataset has Dimensions, Variables, and attributes that describe the data, such as the units, long name, and other metadata (for both the full dataset and each variable).
 
-As an example .. todo make dummy dataset for use in examples  # show data, variables, dimensions
+As an example:
+
+.. code-block:: python
+
+    import netCDF4 as nc
+
+    # open the dataset
+    with nc.Dataset('path/to/dataset.nc') as dataset:
+
+        # print the dataset information
+        print(dataset)
+
+        # root group (NETCDF4 data model, file format HDF5):
+        # xmin: 1306918.0
+        # xmax: 1356918.0
+        # ymin: 4998423.0
+        # ymax: 5048423.0
+        # description: dummy dataset for testing
+        # tile_number: 559
+        # start_date: 2000-07-01
+        # end_date: 2003-06-30
+        # ndays_amalg: 7
+        # dimensions(sizes): grid_x(50), grid_y(50), time(156), space(1331), variance(3)
+        # variables(dimensions): float64 grid_x(grid_x), float64 grid_y(grid_y), int64 active_index(grid_y, grid_x), int16 time(time), int64 variance(variance), float64 x(space), float64 y(space), int16 rainfall(time, space, variance)
+        # ...
+
+        # print the dimensions of the dataset
+        print(dataset.dimensions)
+        # {'grid_x': "<class 'netCDF4.Dimension'>": name = 'grid_x', size = 50,
+        #  'grid_y': "<class 'netCDF4.Dimension'>": name = 'grid_y', size = 50,
+        #  'time': "<class 'netCDF4.Dimension'>": name = 'time', size = 156,
+        #  'space': "<class 'netCDF4.Dimension'>": name = 'space', size = 1331,
+        #  'variance': "<class 'netCDF4.Dimension'>": name = 'variance', size = 3}
+
+
+
+        # print the variables of the dataset
+        print(dataset.variables)
+         # {'grid_x': <class 'netCDF4.Variable'>
+         # float64 grid_x(grid_x)
+         #     longname: grid x coordinates
+         #     units: m
+         #     epsg: 2193
+         # unlimited dimensions:
+         # current shape = (50,)
+         # filling on, default _FillValue of 9.969209968386869e+36 used, 'grid_y': <class 'netCDF4.Variable'>
+         # float64 grid_y(grid_y)
+         #     longname: grid y coordinates
+         #     units: m
+         #     epsg: 2193
+         # unlimited dimensions:
+         # current shape = (50,)
+         # filling on, default _FillValue of 9.969209968386869e+36 used, 'active_index': <class 'netCDF4.Variable'>
+         # int64 active_index(grid_y, grid_x)
+         #     longname: active index
+         #     units: boolean
+         #     description: 1 = active, 0 = inactive, for easy boolean indexing of the model to a regular grid
+         # unlimited dimensions:
+         # current shape = (50, 50)
+         # filling on, default _FillValue of -9223372036854775806 used, 'time': <class 'netCDF4.Variable'>
+         # int16 time(time)
+         #     _FillValue: -1
+         #     long_name: time
+         #     units: days since 1970-01-01 00:00:00
+         #     calendar: standard
+         #     description: amalgamation time step starts on reported day.  e.g. if the reported day is 1 Jan and 7 day amalgamation, then the time step is the mean of 1-Jan to 7-Jan inclusive
+         # unlimited dimensions:
+         # current shape = (156,)
+         # filling on, 'variance': <class 'netCDF4.Variable'>
+         # int64 variance(variance)
+         #     long_name: variance
+         #     units: dimensionless
+         #     description: -1 = low, 0 = average, 1 = high
+         # unlimited dimensions:
+         # current shape = (3,)
+         # filling on, default _FillValue of -9223372036854775806 used, 'x': <class 'netCDF4.Variable'>
+         # float64 x(space)
+         #     _FillValue: nan
+         #     long_name: x coordinate
+         #     units: meters
+         #     standard_name: projection_x_coordinate
+         #     epsg: 2193
+         # unlimited dimensions:
+         # current shape = (1331,)
+         # filling on, 'y': <class 'netCDF4.Variable'>
+         # float64 y(space)
+         #     _FillValue: nan
+         #     long_name: y coordinate
+         #     units: meters
+         #     standard_name: projection_y_coordinate
+         #     epsg: 2193
+         # unlimited dimensions:
+         # current shape = (1331,)
+         # filling on, 'rainfall': <class 'netCDF4.Variable'>
+         # int16 rainfall(time, space, variance)
+         #     _FillValue: -1
+         #     long_name: rainfall
+         #     units: mm
+         #     scale_factor: 0.1
+         #     add_offset: 0
+         #     description: rainfall for the given time step and variance
+         # unlimited dimensions:
+         # current shape = (156, 1331, 3)
+         # filling on}
+
+
 
 
 You can think of the NetCDF4 dataset as a fancy Numpy array with a lot of extra information.
-You can get the dataset just like you would for a Numpy array. For example:  .. todo make dumy dataset, show read all data, slicing, integer indexing, etc.
+You can get the dataset just like you would for a Numpy array.
+
+For example read all rainfall data:
+
+.. code-block:: python
+
+    import netCDF4 as nc
+    import numpy as np
+
+    # open the dataset
+    with nc.Dataset('path/to/dataset.nc') as dataset:
+        rainfall = np.array(dataset.variables['rainfall'][:])
+        print(rainfall.shape)  # should get (156, 1331, 3)
+
+Example, read all the rainfall for the first 7 weeks:
+
+.. code-block:: python
+
+    import netCDF4 as nc
+    import numpy as np
+
+    # open the dataset
+    with nc.Dataset('path/to/dataset.nc') as dataset:
+        rainfall = np.array(dataset.variables['rainfall'][:7])
+        print(rainfall.shape)  # should get (7, 1331, 3)
+
+Example, read all the rainfall data for the first 7 weeks, all spatial locations and the middle variance:
+
+.. code-block:: python
+
+    import netCDF4 as nc
+    import numpy as np
+
+    # open the dataset
+    with nc.Dataset('path/to/dataset.nc') as dataset:
+        rainfall = np.array(dataset.variables['rainfall'][:7, :, 1])
+        print(rainfall.shape)  # should get (7, 1331)
 
 Using this package
 ------------------------------------------------
@@ -193,27 +334,26 @@ If you want to run these examples locally you will need to **clone the repositor
 
 The examples include:
 
-* annual_mean_at_point_polygon.py: This example shows how to get the annual mean of a datasets at a point, the total annual mean of the dataset within a polygon, and how to plot and export the results as a GeoTIFF.
-* data_in_polygon.py: This example shows how to export the time series data within a polygon as a CSV file.
-* export_data_at_point.py: This example shows how to export the time series data at a point as a CSV file.
-* get_relevant_tiles.py:
-* mean_uncert_at_point.py: This example shows how to get the mean and uncertainty of a dataset at a point, and how to plot and export the results as a GeoTIFF.
-* plot_export_spatial_mean.py: This example shows hot ot plot the spatial mean of a dataset and export it as a GeoTIFF.
+#. get_relevant_tiles.py: Set up and get the relevant tiles for a given bounding box.
+#. mean_uncert_at_point.py: This example shows how to get the mean and uncertainty of a dataset at a point, and plot the time series.
+#. data_in_polygon.py: This example shows how to export the time series sum of all rainfall within a polygon as a CSV file.
+#. plot_export_spatial_mean.py: This example shows hot ot plot the spatial mean of a dataset and export it as a GeoTIFF.
+#. annual_mean_at_point_polygon.py: This example shows how to get the annual mean of a datasets at a point, the total annual mean of the dataset within a polygon, and how to plot and export the results as a GeoTIFF.
 
 Example dataset
 ----------------------
 
-We have provided a dummy example dataset in the `examples` directory: .. todo make dataset and put file name here
+We have provided a dummy example dataset in the `examples` directory:  examples/dummy_dataset
 
-It is a NetCDF4 dataset with the following dimensions:
+This example dataset is a NetCDF4 dataset with the spatial dimensions compressed into a single dimension for the the Central Otago region of New Zealand.  It comprises 4 spatial tiles which each have modified ERA5-land Total precipitation
+data for 2000-07-01 to 2003-06-30.
+The data is reported as 7 day mean precipitation in mm/day,  Note that each year is assumed to be 364 days (52 weeks).
+Therefore the additional 1-2 days as simply excluded. The missing days are 2003-06-30 for non-leap years and  2003-06-29 and 2003-06-30.
 
-* time: daily data from 2020-01-01 - 2023-12-31 1461 time steps
-* site: 10 sites .. todo more/less?
-* uncertainty: 5 realisations that provide the uncertainty of the data
+The data also contains a dummy uncertainty dimension: 3 realisations that provide the uncertainty of the data
 
 Please note that this data is roughly based on ERA5-Land Precipitation data, but should not be used for any real analysis.
 
-.. todo add a topomap to the repo.
 
 Bugs, issues and feature requests
 =====================================

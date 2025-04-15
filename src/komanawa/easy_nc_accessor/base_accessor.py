@@ -54,10 +54,6 @@ class _common_functions:
                 f'If you think this is wrong set check_crs=False, pyproj can do silly things sometimes')
         sourceRaster = None  # kill the raster
 
-    def merge_rasters(self):  # todo ???
-        raise NotImplementedError
-
-
 class TileIndexAccessor(_common_functions):
     """
     This is a base class for tile index accessors. It is not meant to be used directly, but rather as a base class
@@ -79,7 +75,7 @@ class TileIndexAccessor(_common_functions):
         assert self.save_index_path.parent.exists(), f'save_index_path parent {self.save_index_path.parent} does not exist'
         assert self.save_index_path.suffix == '.hdf', f'save_index_path {self.save_index_path} must be a .hdf file'
 
-    def get_index(self, recalc=False):  # todo need to finish this function.
+    def get_index(self, recalc=False):
         """
         get / make a tile index from the netcdf files in the data_dir
         :return: dataframe of all tiles that fall within the shapefile. columns are:
@@ -97,15 +93,38 @@ class TileIndexAccessor(_common_functions):
         if self.save_index_path.exists() and not recalc:
             data = pd.read_hdf(self.save_index_path, key='index')
             assert isinstance(data, pd.DataFrame), f'{self.save_index_path} must be a dataframe'
-            return data
+        else:
 
-        # make the index
-        ncfiles = list(self.data_dir.glob('**/*.nc'))
-        assert len(ncfiles) > 0, f'{self.save_index_path} does not contain any .nc files, check the path'
+            # make the index
+            ncfiles = list(self.data_dir.glob('**/*.nc'))
+            assert len(ncfiles) > 0, f'{self.save_index_path} does not contain any .nc files, check the path'
 
+            data = pd.DataFrame(index=range(len(ncfiles)),
+                                columns=['tile_path', 'tile_number', 'tile_xmin', 'tile_ymin', 'tile_xmax', 'tile_ymax',
+                                         'start_date', 'end_date'])
+            for i, f in enumerate(ncfiles):
+                assert f.exists(), f'{f} does not exist'
+                assert f.is_file(), f'{f} is not a file'
+                data.loc[i, 'tile_path'] = str(f.relative_to(self.data_dir))
+                with nc.Dataset(f) as ds:
+                    tnumber = getattr(ds,'tile_number', None)
+                    data.loc[i, 'tile_number'] = tnumber
+                    for k in ['xmin', 'ymin', 'xmax', 'ymax']:
+                        try:
+                            data.loc[i, f'tile_{k}'] = ds.getncattr(k)
+                        except KeyError:
+                            raise KeyError(f'{k} not found in {f}')
+                start_date = getattr(ds, 'start_date', None)
+                end_date = getattr(ds, 'end_date', None)
+                data.loc[i, 'start_date'] = start_date
+                data.loc[i, 'end_date'] = end_date
+            data.to_hdf(self.save_index_path, key='index')
 
-
-        raise NotImplementedError
+        # transform the tile_path to a Path object and convert the dates to datetime objects
+        data['tile_path'] = [self.data_dir.joinpath(p) for p in data['tile_path']]
+        data['start_date'] = pd.to_datetime(data['start_date'])
+        data['end_date'] = pd.to_datetime(data['end_date'])
+        return data
 
     def get_tiles_from_extent(self, xs, ys):
         """

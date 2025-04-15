@@ -4,4 +4,5 @@ on: 4/13/25
 """
 
 
-# todo plot the mean and 5th-95th percentile of data at a point.
+# todo plot the mean and lower/upper time series data at a point.
+# todo use point: 5009051,1337299
