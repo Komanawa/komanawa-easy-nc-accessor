@@ -25,7 +25,7 @@ def get_tiles_from_extent():
     tiles = accessor.get_tiles_from_extent(xs, ys)
     accessor.get_index()
     # plot the tiles
-    _plot_tiles(tiles, 'tiles from extent', extent=(xs[0], xs[1], ys[0], ys[1]))
+    plot_tiles(tiles, 'tiles from extent', extent=(xs[0], xs[1], ys[0], ys[1]))
 
 def get_tiles_from_shapefile():
     # define paths to shapefile
@@ -40,9 +40,9 @@ def get_tiles_from_shapefile():
     tiles = accessor.get_tiles_from_shapefile(shapefile_path)
     accessor.get_index()
     # plot the tiles
-    _plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)
+    plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)
 
-def _plot_tiles(tiles, name, extent=None, shapefile_path=None):
+def plot_tiles(tiles, name, extent=None, shapefile_path=None):
     f, ax = plt.subplots(figsize=(8, 8))
     colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
     for idx, tile in tiles.iterrows():

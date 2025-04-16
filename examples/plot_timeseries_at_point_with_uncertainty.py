@@ -32,7 +32,7 @@ def plot_timeseries_at_point_with_uncertainty():
     upper_bound = time_series_data[:, 2]
     # create array of dates
     dates = pd.date_range(start=getattr(ds, 'start_date', None), end=getattr(ds, 'end_date', None),
-                          freq=f'{getattr(ds, 'ndays_amalg', None)}D', inclusive='right') # todo should this be a class function
+                          freq=f'{getattr(ds, 'ndays_amalg', None)}D', inclusive='left')[:-1] # todo should this be a class function
 
     # plot data
     f, ax = plt.subplots(figsize=(15,6))
