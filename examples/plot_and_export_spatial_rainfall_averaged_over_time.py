@@ -8,6 +8,9 @@ import netCDF4 as nc
 import matplotlib.pyplot as plt
 
 def plot_and_export_spatial_rainfall_averaged_over_time():
+    """
+    This is an example of how to calculate the mean rainfall over time in a tile, plot the results and export as a GeoTIFF.
+    """
     # choose one of the data files to use
     tile_data_path = Path(__file__).parent.joinpath('dummy_dataset/559_2000-07-01_2003-06-30.nc')
     # create data accessor

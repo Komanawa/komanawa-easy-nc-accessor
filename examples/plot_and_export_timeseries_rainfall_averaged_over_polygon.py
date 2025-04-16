@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 
 
 def plot_and_export_timeseries_rainfall_averaged_over_polygon():
+    """
+    This is an example of how to calculate a timeseries of the mean rainfall in a polygon, plot the results and export as a CSV.
+    """
     shapefile_path = Path(__file__).parent.joinpath('example_inputs/example_polygon.shp')
     # define path to the directory containing the data
     data_dir = Path(__file__).parent.joinpath('dummy_dataset')
@@ -38,6 +41,7 @@ def plot_and_export_timeseries_rainfall_averaged_over_polygon():
     dates = pd.date_range(start=getattr(ds, 'start_date', None), end=getattr(ds, 'end_date', None),
                   freq=f'{getattr(ds, 'ndays_amalg', None)}D', inclusive='left')[:-1] # todo should this be a class function
 
+    # plot the average rainfall in polygon
     f, ax = plt.subplots(figsize=(12, 6))
     ax.plot(dates, average_rainfall_in_polygon, label='Mean', lw=1, zorder=10)
     ax.set_title('Average rainfall in polygon')

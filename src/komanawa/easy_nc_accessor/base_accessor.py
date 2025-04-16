@@ -354,7 +354,8 @@ class _BaseAccessor(_common_functions):
         if array.shape != self.spatial_2d_shape:
             raise ValueError(f'{array.shape=} must match {self.spatial_2d_shape=}')
         no_flow = self.get_active_index()
-        array[~no_flow] = null_val
+        array[~no_flow] = null_val # review, hey matt, I noticed that if you export to raster and then try plot the array in python, you get this no data values
+        # could be worth working on a copy of the array instead of modifying the original here?
         output_raster = gdal.GetDriverByName('GTiff').Create(path, array.shape[1], array.shape[0], 1,
                                                              dtype, **kwargs)  # Open the file
         x_min, x_max, y_min, y_max = self.get_xlim_ylim()

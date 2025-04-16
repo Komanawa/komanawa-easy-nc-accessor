@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 def plot_timeseries_at_point_with_uncertainty():
-    # define path to the directory containing the data
-    data_path = Path(__file__).parent.joinpath("dummy_dataset")
-    # define path of where to save the index
-    save_path = '/home/connor/unbacked/easy-nc-accessor/index_for_extent.hdf'
+    """
+    This is an example of how to plot the time series data at a point with uncertainty
+    """
+
     # import point
     from example_inputs import example_point
     # tile path

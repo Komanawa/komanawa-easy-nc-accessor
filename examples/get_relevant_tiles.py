@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import geopandas as gpd
 from pathlib import Path
 
-"""
-This script demonstrates how to use the TileIndexAccessor class to get tiles from a shapefile or an extent.
-"""
-
 def get_tiles_from_extent():
+    """
+    This is an example of how to get the tiles that intersect with a given extent.
+    """
+
     # lists of nztm x and nztm y coordinates define limits of the extent
     xs = [1305169, 1368943]
     ys = [4977328, 5045163]
@@ -28,6 +28,9 @@ def get_tiles_from_extent():
     plot_tiles(tiles, 'tiles from extent', extent=(xs[0], xs[1], ys[0], ys[1]))
 
 def get_tiles_from_shapefile():
+    """
+    This is an example of how to get the tiles that intersect with a given shapefile.
+    """
     # define paths to shapefile
     shapefile_path = Path(__file__).parent.joinpath('example_inputs/example_polygon.shp')
     # define path to the directory containing the data
@@ -43,6 +46,9 @@ def get_tiles_from_shapefile():
     plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)
 
 def plot_tiles(tiles, name, extent=None, shapefile_path=None):
+    """
+    Function to plot the tiles and the shapefile or extent.
+    """
     f, ax = plt.subplots(figsize=(8, 8))
     colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
     for idx, tile in tiles.iterrows():
