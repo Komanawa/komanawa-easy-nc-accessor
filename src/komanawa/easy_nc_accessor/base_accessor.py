@@ -691,6 +691,8 @@ class CompressedSpatialAccessor(_BaseAccessor):
 
 
         :return: index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points
+
+                - note that this is the index of the spatial points (which does not include inactivate cells)
         """
         return_single = False
         if pd.api.types.is_number(nztmx):
@@ -705,6 +707,29 @@ class CompressedSpatialAccessor(_BaseAccessor):
         out_of_bounds = ((nztmx < xmin) | (nztmx > xmax) | (nztmy < ymin) | (nztmy > ymax))
         if coords_out_domain == 'raise' and out_of_bounds.any():
             raise ValueError(f'coordinates at indexes {np.where(out_of_bounds)} are out of domain')
+
+        if coords_out_domain == 'coerce' and out_of_bounds.any():
+            return -1
+
+        xs, ys = self._get_grid_x_y(cell_centers=True)
+        xs = xs.flatten()
+        ys = ys.flatten()
+        active_index = self.get_active_index().flatten()
+        xs = xs[active_index]
+        ys = ys[active_index]
+
+        nztmx = np.full((len(nztmx), len(xs)), nztmx)
+        nztmy = np.full((len(nztmy), len(xs)), nztmy)
+
+        dist_x = nztmx - xs
+        dist_y = nztmy - ys
+        dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
+        loc = np.nanargmin(dist, axis=1)
+
+        if return_single:
+            return loc[0]
+        else:
+            return loc
 
 
 
