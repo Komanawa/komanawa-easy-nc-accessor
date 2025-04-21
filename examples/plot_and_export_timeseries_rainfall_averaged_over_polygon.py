@@ -20,7 +20,9 @@ def plot_and_export_timeseries_rainfall_averaged_over_polygon():
     # define path to the directory containing the data
     data_dir = Path(__file__).parent.joinpath('dummy_dataset')
     # define path of where to save the index (make sure you make the directory for this to sit in)
-    save_path = '/home/connor/unbacked/easy-nc-accessor/index_for_shapefile.hdf'
+    save_path = Path(__file__).parent.joinpath('outputs')
+    save_path.mkdir(parents=True, exist_ok=True)
+    save_path = save_path.joinpath('index_for_shapefile.hdf')
     # create the TileIndexAccessor object
     accessor = TileIndexAccessor(data_dir=data_dir, save_index_path=save_path)
     # get the tiles from the shapefile
@@ -51,7 +53,9 @@ def plot_and_export_timeseries_rainfall_averaged_over_polygon():
     plt.show()
     # export rainfall data to csv
     df = pd.DataFrame({'date': dates, 'rainfall': average_rainfall_in_polygon})
-    csv_path = '/home/connor/unbacked/easy-nc-accessor/average_rainfall_in_polygon.csv'
+    csv_path = Path(__file__).parent.joinpath('outputs')
+    csv_path.mkdir(parents=True, exist_ok=True)
+    csv_path = csv_path.joinpath('/home/connor/unbacked/easy-nc-accessor/average_rainfall_in_polygon.csv')
     df.to_csv(csv_path, index=False)
 
 if __name__ == "__main__":

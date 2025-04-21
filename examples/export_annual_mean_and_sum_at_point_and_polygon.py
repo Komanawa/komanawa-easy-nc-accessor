@@ -37,7 +37,10 @@ def export_annual_sum_and_mean_at_point():
     df = pd.DataFrame({'rainfall': time_series_at_point}, index=dates)
     # resample the data to annual, as find the sum and mean
     temp = df.resample('12MS').agg(['sum', 'mean'])
-    save_path = '/home/connor/unbacked/easy-nc-accessor/annual_rainfall_at_point.csv'
+
+    save_path = Path(__file__).parent.joinpath('outputs')
+    save_path.mkdir(parents=True, exist_ok=True)
+    save_path = save_path.joinpath('annual_rainfall_at_point.csv')
     # write to csv file
     temp.to_csv(save_path, index_label='water_year_start')
 
@@ -81,7 +84,9 @@ def export_annual_sum_and_mean_in_polygon():
         # set the values outside the polygon to NaN
         sum.iloc[:, ~in_polygon_1d] = np.nan
         mean.iloc[:, ~in_polygon_1d] = np.nan
-        save_dir = Path("/home/connor/unbacked/easy-nc-accessor/")
+        save_dir = Path(__file__).parent.joinpath('outputs')
+        save_dir.mkdir(parents=True, exist_ok=True)
+
 
         # save each water year start as a raster
         for idx, date in enumerate(sum.index):

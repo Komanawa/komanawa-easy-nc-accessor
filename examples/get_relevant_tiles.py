@@ -18,7 +18,9 @@ def get_tiles_from_extent():
     # define path to the directory containing the data
     data_path = Path(__file__).parent.joinpath("dummy_dataset")
     # define path of where to save the index
-    save_path = '/home/connor/unbacked/easy-nc-accessor/index_for_extent.hdf'
+    save_path = Path(__file__).parent.joinpath('outputs')
+    save_path.mkdir(parents=True, exist_ok=True)
+    save_path = save_path.joinpath('index_for_extent.hdf')
     # create the TileIndexAccessor object
     accessor = TileIndexAccessor(data_dir=data_path, save_index_path=save_path)
     # get the tiles from the extent
@@ -36,7 +38,9 @@ def get_tiles_from_shapefile():
     # define path to the directory containing the data
     data_dir = Path(__file__).parent.joinpath('dummy_dataset')
     # define path of where to save the index (make sure you make the directory for this to sit in)
-    save_path = '/home/connor/unbacked/easy-nc-accessor/index_for_shapefile.hdf'
+    save_path = Path(__file__).parent.joinpath('outputs')
+    save_path.mkdir(parents=True, exist_ok=True)
+    save_path = save_path.joinpath('index_for_shapefile.hdf')
     # create the TileIndexAccessor object
     accessor = TileIndexAccessor(data_dir=data_dir, save_index_path=save_path)
     # get the tiles from the shapefile

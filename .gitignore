@@ -190,3 +190,4 @@ auxil/*
 
 # sphinx autoapi build files
 /docs_build/autoapi/
+/examples/outputs/

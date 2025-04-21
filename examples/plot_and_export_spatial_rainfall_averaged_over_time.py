@@ -30,7 +30,9 @@ def plot_and_export_spatial_rainfall_averaged_over_time():
     ax.set_ylabel('NZTM Y (m)')
     plt.show()
     # export the mean rainfall as a GeoTIFF
-    raster_path = "/home/connor/unbacked/easy-nc-accessor/mean_rainfall_spatial_mean.tif"
+    raster_path = Path(__file__).parent.joinpath('outputs')
+    raster_path.mkdir(parents=True, exist_ok=True)
+    raster_path = raster_path.joinpath('mean_rainfall_spatial_mean.tif')
     accessor.spatial_2d_to_raster(raster_path, mean_rainfall_2d)
 
 if __name__ == "__main__":
