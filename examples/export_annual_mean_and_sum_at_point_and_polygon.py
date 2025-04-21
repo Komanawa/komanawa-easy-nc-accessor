@@ -17,10 +17,6 @@ def export_annual_sum_and_mean_at_point():
     from a netCDF file using the CompressedSpatialAccessor class.
     """
 
-    # define path to the directory containing the data
-    data_path = Path(__file__).parent.joinpath("dummy_dataset")
-    # define path of where to save the index
-    save_path = '/home/connor/unbacked/easy-nc-accessor/index_for_extent.hdf'
     # import point
     from example_inputs import example_point
     # set the file path. This could also be found using the TileIndexAccessor class, see example get_relevant_tiles.py
