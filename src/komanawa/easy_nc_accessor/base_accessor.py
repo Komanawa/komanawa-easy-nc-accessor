@@ -306,8 +306,6 @@ class TileIndexAccessor(_common_functions):
         return fig, ax
 
 
-# todo regen documentation
-
 class _BaseAccessor(_common_functions):
     epsg_num = 2193
     grid_space = None  # set in init

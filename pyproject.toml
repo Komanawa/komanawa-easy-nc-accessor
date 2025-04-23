@@ -42,4 +42,4 @@ version = {attr = "komanawa.easy_nc_accessor.version.__version__"}
 [project.urls]
 Homepage = "https://github.com/Komanawa/komanawa-easy-nc-accessor"
 Issues = "https://github.com/Komanawa/komanawa-easy-nc-accessor/issues"
-Documentation = "https://github.com/Komanawa/komanawa-easy-nc-accessor" # todo when there is a docs build
+Documentation = "https://komanawa.github.io/komanawa-easy-nc-accessor"

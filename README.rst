@@ -1,4 +1,4 @@
 komanawa-easy-nc-accessor
 ###################################
 
-documentation is available at:  .. todo once there is a docs build
+documentation is available at: https://komanawa.github.io/komanawa-easy-nc-accessor/
