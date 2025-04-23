@@ -5,7 +5,7 @@ komanawa.easy_nc_accessor
 
 .. autoapi-nested-parse::
 
-   Support for easy access to NetCDF4 datasets produced by Komanawa Solutions Ltd..
+   Support for easy access to NetCDF4 datasets produced by Komanawa Solutions Ltd.
 
 
 
@@ -111,6 +111,8 @@ Package Contents
 
 
       :return: index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points
+
+              - note that this is the index of the spatial points (which does not include inactivate cells)
 
 
 
@@ -236,6 +238,16 @@ Package Contents
 
 
 
+   .. py:method:: export_tiles_to_shapefile(outpath, tiles=None)
+
+      Export the tile extents to a shapefile
+
+      :param outpath: path to save the shapefile
+      :param tiles: None (Export all) or tile numbers to export.
+      :return: None
+
+
+
    .. py:method:: get_index(recalc=False)
 
       get / make a tile index from the netcdf files in the data_dir
@@ -288,6 +300,21 @@ Package Contents
           * 'tile_ymax': the maximum y coordinate of the tile
           * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
           * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
+
+
+
+   .. py:method:: plot_tiles(tiles=None, basemap_path=None, ax=None, figsize=(10, 10), linewidth=4, linecolor='r', label_tiles=True)
+
+      plot the tiles on an optional basemap
+
+      :param tiles: None (plot all) or tile numbers to export.
+      :param basemap_path: path to a basemap
+      :param ax: None or a matplotlib axis to plot on
+      :param figsize: if ax is None, the size of the figure to create
+      :param linewidth: line width of the tile edges
+      :param linecolor: color of the tile edges
+      :param label_tiles: if True, label the tiles with their tile number at the center of the tile
+      :return: fig, ax
 
 
 

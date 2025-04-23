@@ -364,7 +364,7 @@
                   
   <section id="module-komanawa.easy_nc_accessor">
 <span id="komanawa-easy-nc-accessor"></span><h1>komanawa.easy_nc_accessor<a class="headerlink" href="#module-komanawa.easy_nc_accessor" title="Link to this heading">#</a></h1>
-<p>Support for easy access to NetCDF4 datasets produced by Komanawa Solutions Ltd..</p>
+<p>Support for easy access to NetCDF4 datasets produced by Komanawa Solutions Ltd.</p>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
@@ -500,7 +500,11 @@
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points</p>
+<dd class="field-odd"><p><p>index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points</p>
+<ul class="simple">
+<li><p>note that this is the index of the spatial points (which does not include inactivate cells)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -672,6 +676,23 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="komanawa.easy_nc_accessor.TileIndexAccessor.export_tiles_to_shapefile">
+<span class="sig-name descname"><span class="pre">export_tiles_to_shapefile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.TileIndexAccessor.export_tiles_to_shapefile" title="Link to this definition">#</a></dt>
+<dd><p>Export the tile extents to a shapefile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outpath</strong> – path to save the shapefile</p></li>
+<li><p><strong>tiles</strong> – None (Export all) or tile numbers to export.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="komanawa.easy_nc_accessor.TileIndexAccessor.get_index">
 <span class="sig-name descname"><span class="pre">get_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recalc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.TileIndexAccessor.get_index" title="Link to this definition">#</a></dt>
 <dd><p>get / make a tile index from the netcdf files in the data_dir</p>
@@ -749,6 +770,28 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="komanawa.easy_nc_accessor.TileIndexAccessor.plot_tiles">
+<span class="sig-name descname"><span class="pre">plot_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basemap_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_tiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.TileIndexAccessor.plot_tiles" title="Link to this definition">#</a></dt>
+<dd><p>plot the tiles on an optional basemap</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tiles</strong> – None (plot all) or tile numbers to export.</p></li>
+<li><p><strong>basemap_path</strong> – path to a basemap</p></li>
+<li><p><strong>ax</strong> – None or a matplotlib axis to plot on</p></li>
+<li><p><strong>figsize</strong> – if ax is None, the size of the figure to create</p></li>
+<li><p><strong>linewidth</strong> – line width of the tile edges</p></li>
+<li><p><strong>linecolor</strong> – color of the tile edges</p></li>
+<li><p><strong>label_tiles</strong> – if True, label the tiles with their tile number at the center of the tile</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>fig, ax</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -821,9 +864,11 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor"><code class="docutils literal notranslate"><span class="pre">TileIndexAccessor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.check_raster_crs"><code class="docutils literal notranslate"><span class="pre">check_raster_crs()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.check_shape_crs"><code class="docutils literal notranslate"><span class="pre">check_shape_crs()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.export_tiles_to_shapefile"><code class="docutils literal notranslate"><span class="pre">export_tiles_to_shapefile()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.get_index"><code class="docutils literal notranslate"><span class="pre">get_index()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.get_tiles_from_extent"><code class="docutils literal notranslate"><span class="pre">get_tiles_from_extent()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.get_tiles_from_shapefile"><code class="docutils literal notranslate"><span class="pre">get_tiles_from_shapefile()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.TileIndexAccessor.plot_tiles"><code class="docutils literal notranslate"><span class="pre">plot_tiles()</span></code></a></li>
 </ul>
 </li>
 </ul>

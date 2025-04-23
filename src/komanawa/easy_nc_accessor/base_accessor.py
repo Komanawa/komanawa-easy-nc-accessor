@@ -6,6 +6,7 @@ import warnings
 from copy import deepcopy
 from pathlib import Path
 from osgeo import gdal, ogr, osr
+from shapely.geometry import box
 import numpy as np
 import netCDF4 as nc
 import geopandas as gpd
@@ -76,6 +77,7 @@ class _common_functions:
         ax.imshow(image, extent=[ll[0], ur[0], ll[1], ur[1]], cmap='gray', vmin=0, vmax=255)
         ds = None
 
+
 class TileIndexAccessor(_common_functions):
     """
     Support to select geospatial tiles from a directory of netcdf files.  The netcdf files must have the following attributes:
@@ -145,7 +147,7 @@ class TileIndexAccessor(_common_functions):
                 assert f.is_file(), f'{f} is not a file'
                 data.loc[i, 'tile_path'] = str(f.relative_to(self.data_dir))
                 with nc.Dataset(f) as ds:
-                    tnumber = getattr(ds,'tile_number', None)
+                    tnumber = getattr(ds, 'tile_number', None)
                     data.loc[i, 'tile_number'] = tnumber
                     for k in ['xmin', 'ymin', 'xmax', 'ymax']:
                         try:
@@ -229,10 +231,52 @@ class TileIndexAccessor(_common_functions):
         ys = np.array([miny, maxy])
         return self.get_tiles_from_extent(xs, ys)
 
-    def export_tiles_to_shapefile(self, outpath, tiles=None): # todo make this happen
-        raise NotImplementedError
+    def export_tiles_to_shapefile(self, outpath, tiles=None):
+        """
+        Export the tile extents to a shapefile
 
-    def plot_tiles(self, tiles=None, basemap_path=None, ax=None, figsize=(10, 10)):
+        :param outpath: path to save the shapefile
+        :param tiles: None (Export all) or tile numbers to export.
+        :return: None
+        """
+
+        outpath = Path(outpath)
+
+        assert outpath.parent.exists(), f'outpath parent {outpath.parent} does not exist'
+        assert outpath.suffix == '.shp', f'outpath {outpath} must be a .shp file'
+
+        index = self.get_index()
+        if tiles is None:
+            tiles = index['tile_number'].unique()
+        assert set(tiles).issubset(index['tile_number'].unique()), f'{tiles} not in {index["tile_number"].unique()}'
+        assert len(tiles) > 0, 'no tiles to export'
+
+        keep_index = index.loc[index['tile_number'].isin(tiles)]
+
+        # convert to shapefile and export.
+        geometry = []
+        for i, row in keep_index.iterrows():
+            geom = box(row['tile_xmin'], row['tile_ymin'], row['tile_xmax'], row['tile_ymax'])
+            geometry.append(geom)
+        outdata = gpd.GeoDataFrame(keep_index, geometry=geometry, crs='EPSG:2193')
+        outdata.to_file(outpath, driver='ESRI Shapefile')
+
+    def plot_tiles(self, tiles=None, basemap_path=None, ax=None, figsize=(10, 10),
+                   linewidth=4,
+                   linecolor='r',
+                   label_tiles=True):
+        """
+        plot the tiles on an optional basemap
+
+        :param tiles: None (plot all) or tile numbers to export.
+        :param basemap_path: path to a basemap
+        :param ax: None or a matplotlib axis to plot on
+        :param figsize: if ax is None, the size of the figure to create
+        :param linewidth: line width of the tile edges
+        :param linecolor: color of the tile edges
+        :param label_tiles: if True, label the tiles with their tile number at the center of the tile
+        :return: fig, ax
+        """
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize)
         else:
@@ -241,7 +285,26 @@ class TileIndexAccessor(_common_functions):
 
         self._plot_basemap(ax=ax, base_map_path=basemap_path)
 
-        raise NotImplementedError # todo make this happen
+        index = self.get_index()
+        if tiles is None:
+            tiles = index['tile_number'].unique()
+        assert set(tiles).issubset(index['tile_number'].unique()), f'{tiles} not in {index["tile_number"].unique()}'
+        assert len(tiles) > 0, 'no tiles to export'
+
+        keep_index = index.loc[index['tile_number'].isin(tiles)]
+        for idx, tile in keep_index.iterrows():
+            # plot the tile
+            rect = plt.Rectangle((tile['tile_xmin'], tile['tile_ymin']),
+                                 tile['tile_xmax'] - tile['tile_xmin'],
+                                 tile['tile_ymax'] - tile['tile_ymin'],
+                                 edgecolor=linecolor, facecolor='none', linewidth=linewidth)
+            ax.add_patch(rect)
+            if label_tiles:
+                ax.text(np.mean(tile[['tile_xmin', 'tile_xmax']]), np.mean(tile[['tile_ymin', 'tile_ymax']]),
+                        tile['tile_number'],
+                        bbox=dict(facecolor='white', alpha=0.5), ha='center', va='center')
+        return fig, ax
+
 
 # todo regen documentation
 
@@ -250,7 +313,8 @@ class _BaseAccessor(_common_functions):
     grid_space = None  # set in init
     spatial_2d_shape = None  # (rows, cols) set in init
 
-    def __init__(self, datapath, active_index_name='active_index', grid_x_name='grid_x', grid_y_name='grid_y', loc_x_name='x', loc_y_name='y'):
+    def __init__(self, datapath, active_index_name='active_index', grid_x_name='grid_x', grid_y_name='grid_y',
+                 loc_x_name='x', loc_y_name='y'):
         """
 
         :param datapath: path to the netcdf file
@@ -696,7 +760,6 @@ class CompressedSpatialAccessor(_BaseAccessor):
         active_index = self.get_active_index()
         return array[active_index]
 
-
     def get_closest_loc_to_point(self, nztmx, nztmy, coords_out_domain='raise'):
         """
         get the closest spatial index(s) to a point in the spatial domain
@@ -750,11 +813,3 @@ class CompressedSpatialAccessor(_BaseAccessor):
             return loc[0]
         else:
             return loc
-
-
-
-
-
-
-
-

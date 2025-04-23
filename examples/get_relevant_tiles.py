@@ -6,7 +6,26 @@ from komanawa.easy_nc_accessor import TileIndexAccessor
 import matplotlib.pyplot as plt
 import geopandas as gpd
 from pathlib import Path
-# todo MD review -- and finish.
+
+
+def export_tile_bounds_to_shapefile():
+    """
+    This is an example of how to export the tile bounds to a shapefile.
+    :return:
+    """
+    # define path to the directory containing the data
+    data_path = Path(__file__).parent.joinpath("dummy_dataset")
+    # directory to save the outputs / index -- defaults to Downloads
+    outdir = Path.home().joinpath('Downloads', 'easy_nc_accessor_examples',
+                                  'get_relevant_tiles')
+    outdir.mkdir(parents=True, exist_ok=True)
+    # define path of where to save the index
+    save_path = outdir.joinpath('index_for_extent.hdf')
+    # create the TileIndexAccessor object
+    accessor = TileIndexAccessor(data_dir=data_path, save_index_path=save_path)
+    accessor.export_tiles_to_shapefile(outdir.joinpath('tile_bounds.shp'))
+    print('Exported tile bounds to', outdir.joinpath('tile_bounds.shp'))
+
 
 def get_tiles_from_extent():
     """
@@ -31,7 +50,11 @@ def get_tiles_from_extent():
     accessor.get_index()
 
     # plot the tiles
-    plot_tiles(tiles, 'tiles from extent', extent=(xs[0], xs[1], ys[0], ys[1]))
+    basemap_path = Path(__file__).parent.joinpath('example_inputs/nz-topo250-maps.jpg')
+    fig, ax = accessor.plot_tiles(tiles=tiles['tile_number'], basemap_path=basemap_path)
+    ax.set_title('Tiles from extent')
+    plt.show()
+
 
 def get_tiles_from_shapefile():
     """
@@ -55,53 +78,13 @@ def get_tiles_from_shapefile():
     tiles = accessor.get_tiles_from_shapefile(shapefile_path)
     accessor.get_index()
     # plot the tiles
-    plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)  # todo use the class to support this.
-
-    # todo export tiles to the shapefile.
-
-
-def plot_tiles(tiles, name, extent=None, shapefile_path=None):  # todo move this into the class
-    """
-    Function to plot the tiles and the shapefile or extent.
-    """
-    f, ax = plt.subplots(figsize=(8, 8))
-    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
-    for idx, tile in tiles.iterrows():
-        # plot the tile
-        rect = plt.Rectangle((tile['tile_xmin'], tile['tile_ymin']),
-                             tile['tile_xmax']-tile['tile_xmin'],
-                             tile['tile_ymax']-tile['tile_ymin'],
-                             alpha=0.3, color=colors[idx])
-        ax.add_patch(rect)
-        # plot the tile name
-        ax.text((tile['tile_xmax']+tile['tile_xmin'])/2, (tile['tile_ymax']+tile['tile_ymin'])/2, f'Tile {tile['tile_number']}', fontsize=8, va='center', ha='center')
-
-    assert not (extent is not None and shapefile_path is not None), "Only one of extent or shapefile_path should be provided"
-    if shapefile_path is not None:
-        gdf = gpd.read_file(shapefile_path)
-        # plot the shapefile
-        gdf.plot(ax=ax, color='none', edgecolor='black', linewidth=0.5)
-        # plot the shapefile name
-        ax.text(gdf.geometry.centroid.x.values[0], gdf.geometry.centroid.y.values[0], 'Shapefile', fontsize=8, va='center', ha='center')
-    elif extent is not None:
-        # plot the extent
-        rect = plt.Rectangle((extent[0], extent[2]),
-                             extent[1]-extent[0],
-                             extent[3]-extent[2],
-                             alpha=1, facecolor='none', edgecolor='black', linewidth=0.5, zorder=10)
-        ax.add_patch(rect)
-        # plot the extent name
-        ax.text((extent[1]+extent[0])/2, (extent[3]+extent[2])/2, 'Extent', fontsize=8, va='center', ha='center')
-
-    plt.ylabel('NZTM Y')
-    plt.xlabel('NZTM X')
-    # set the limits of the plot to the extent of the tiles
-    plt.xlim(tiles['tile_xmin'].min(), tiles['tile_xmax'].max())
-    plt.ylim(tiles['tile_ymin'].min(), tiles['tile_ymax'].max())
-    ax.set_aspect('equal')
-    plt.title(name)
+    basemap_path = Path(__file__).parent.joinpath('example_inputs/nz-topo250-maps.jpg')
+    fig, ax = accessor.plot_tiles(tiles=tiles['tile_number'], basemap_path=basemap_path)
+    ax.set_title('Tiles from shapefile')
     plt.show()
 
+
 if __name__ == '__main__':
+    export_tile_bounds_to_shapefile()
     get_tiles_from_extent()
     get_tiles_from_shapefile()
