@@ -109,9 +109,12 @@ class TestCompressedSpatialAccessor(unittest.TestCase):
                 accessor.spatial_2d_to_raster(raster_path, data_2d)
                 assert raster_path.exists()
                 ds = gdal.Open(raster_path)
-                loaded_2d = np.array(ds.GetRasterBand(1).ReadAsArray())
+                band = ds.GetRasterBand(1)
+                missing_val = band.GetNoDataValue()
+                loaded_2d = np.array(band.ReadAsArray())
+                loaded_2d[np.isclose(loaded_2d, missing_val)] = np.nan
                 assert data_2d.shape == loaded_2d.shape
-                assert np.allclose(data_2d, np.flipud(loaded_2d))
+                assert np.allclose(data_2d, np.flipud(loaded_2d), equal_nan=True)
 
     def test_get_loc_from_point(self):
 

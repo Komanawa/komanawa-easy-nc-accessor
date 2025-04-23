@@ -3,6 +3,7 @@ created matt_dumont
 on: 4/13/25
 """
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from osgeo import gdal, ogr, osr
 import numpy as np
@@ -53,6 +54,27 @@ class _common_functions:
                 f'epsg of raster {in_epsg} does not match model epsg {self.epsg_num}, got raw {sourceRaster.GetProjectionRef()}'
                 f'If you think this is wrong set check_crs=False, pyproj can do silly things sometimes')
         sourceRaster = None  # kill the raster
+
+    def _plot_basemap(self, ax, base_map_path):
+        ds = gdal.Open(str(base_map_path))
+        width = ds.RasterXSize
+        height = ds.RasterYSize
+        gt = ds.GetGeoTransform()
+        minx = gt[0]
+        miny = gt[3] + width * gt[4] + height * gt[5]
+        maxx = gt[0] + width * gt[1] + height * gt[2]
+        maxy = gt[3]
+
+        image = ds.ReadAsArray()
+        if image.ndim == 3:  # if a rgb image then plot as greyscale
+            image = image.mean(axis=0)
+            image = image.astype(float)
+            image[image == 0] = np.nan
+        ll = (minx, miny)
+        ur = (maxx, maxy)
+
+        ax.imshow(image, extent=[ll[0], ur[0], ll[1], ur[1]], cmap='gray', vmin=0, vmax=255)
+        ds = None
 
 class TileIndexAccessor(_common_functions):
     """
@@ -207,6 +229,21 @@ class TileIndexAccessor(_common_functions):
         ys = np.array([miny, maxy])
         return self.get_tiles_from_extent(xs, ys)
 
+    def export_tiles_to_shapefile(self, outpath, tiles=None): # todo make this happen
+        raise NotImplementedError
+
+    def plot_tiles(self, tiles=None, basemap_path=None, ax=None, figsize=(10, 10)):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize)
+        else:
+            assert isinstance(ax, plt.Axes)
+            fig = ax.figure
+
+        self._plot_basemap(ax=ax, base_map_path=basemap_path)
+
+        raise NotImplementedError # todo make this happen
+
+# todo regen documentation
 
 class _BaseAccessor(_common_functions):
     epsg_num = 2193
@@ -333,6 +370,7 @@ class _BaseAccessor(_common_functions):
         :param compression: boolean if True use compression (LZW, options = 'COMPRESS=LZW', 'PREDICTOR={p}', 'TILED=YES') where p=2 for int and 3 for float
         :return:
         """
+        array = deepcopy(array)
         dtype = self._get_gdal_dtype(dtype)
 
         if dtype in [gdal.GDT_Int8, gdal.GDT_Int16, gdal.GDT_Int32, gdal.GDT_UInt16, gdal.GDT_UInt32]:
@@ -354,7 +392,7 @@ class _BaseAccessor(_common_functions):
         if array.shape != self.spatial_2d_shape:
             raise ValueError(f'{array.shape=} must match {self.spatial_2d_shape=}')
         no_flow = self.get_active_index()
-        array[~no_flow] = null_val # review, hey matt, I noticed that if you export to raster and then try plot the array in python, you get this no data values
+        array[~no_flow] = null_val
         # could be worth working on a copy of the array instead of modifying the original here?
         output_raster = gdal.GetDriverByName('GTiff').Create(path, array.shape[1], array.shape[0], 1,
                                                              dtype, **kwargs)  # Open the file
@@ -370,6 +408,20 @@ class _BaseAccessor(_common_functions):
         band.FlushCache()
         band = None
         output_raster = None
+
+    def _plot_basemap(self, ax, base_map_path):
+        super()._plot_basemap(ax, base_map_path)
+        model_xs_edge, model_ys_edge = self._get_grid_x_y(cell_centers=False)
+        no_flow = self.get_active_index()
+        plt_nf = self.get_2d_spatial_zero(float)
+        plt_nf[self.get_active_index()] = np.nan
+
+        cmap, norm = from_levels_and_colors([0, 1], ['cyan', 'black', 'white'], extend='both')
+        bk_edgecolors = 'face'
+        bk_linewidth = 0
+        pcm = ax.pcolormesh(model_xs_edge, model_ys_edge, np.ma.masked_invalid(no_flow), cmap=cmap, norm=norm,
+                            alpha=0.5, edgecolors=bk_edgecolors, linewidth=bk_linewidth,
+                            antialiased=True)
 
     def _get_grid_x_y(self, cell_centers=True):
         if cell_centers:
@@ -471,39 +523,6 @@ class _BaseAccessor(_common_functions):
         ax.set_aspect('equal')
 
         return fig, ax
-
-    def _plot_basemap(self, ax, base_map_path):
-        ds = gdal.Open(str(base_map_path))
-        width = ds.RasterXSize
-        height = ds.RasterYSize
-        gt = ds.GetGeoTransform()
-        minx = gt[0]
-        miny = gt[3] + width * gt[4] + height * gt[5]
-        maxx = gt[0] + width * gt[1] + height * gt[2]
-        maxy = gt[3]
-
-        image = ds.ReadAsArray()
-        if image.ndim == 3:  # if a rgb image then plot as greyscale
-            image = image.mean(axis=0)
-            image = image.astype(float)
-            image[image == 0] = np.nan
-        ll = (minx, miny)
-        ur = (maxx, maxy)
-
-        ax.imshow(image, extent=[ll[0], ur[0], ll[1], ur[1]], cmap='gray', vmin=0, vmax=255)
-        ds = None
-
-        model_xs_edge, model_ys_edge = self._get_grid_x_y(cell_centers=False)
-        no_flow = self.get_active_index()
-        plt_nf = self.get_2d_spatial_zero(float)
-        plt_nf[self.get_active_index()] = np.nan
-
-        cmap, norm = from_levels_and_colors([0, 1], ['cyan', 'black', 'white'], extend='both')
-        bk_edgecolors = 'face'
-        bk_linewidth = 0
-        pcm = ax.pcolormesh(model_xs_edge, model_ys_edge, np.ma.masked_invalid(no_flow), cmap=cmap, norm=norm,
-                            alpha=0.5, edgecolors=bk_edgecolors, linewidth=bk_linewidth,
-                            antialiased=True)
 
     def shapefile_to_spatial_2d(self, shp_path, attribute, alltouched=True, check_crs=True):
 

@@ -6,6 +6,7 @@ from komanawa.easy_nc_accessor import TileIndexAccessor
 import matplotlib.pyplot as plt
 import geopandas as gpd
 from pathlib import Path
+# todo MD review -- and finish.
 
 def get_tiles_from_extent():
     """
@@ -17,15 +18,18 @@ def get_tiles_from_extent():
     ys = [4977328, 5045163]
     # define path to the directory containing the data
     data_path = Path(__file__).parent.joinpath("dummy_dataset")
+    # directory to save the outputs / index -- defaults to Downloads
+    outdir = Path.home().joinpath('Downloads', 'easy_nc_accessor_examples',
+                                  'get_relevant_tiles')
+    outdir.mkdir(parents=True, exist_ok=True)
     # define path of where to save the index
-    save_path = Path(__file__).parent.joinpath('outputs')
-    save_path.mkdir(parents=True, exist_ok=True)
-    save_path = save_path.joinpath('index_for_extent.hdf')
+    save_path = outdir.joinpath('index_for_extent.hdf')
     # create the TileIndexAccessor object
     accessor = TileIndexAccessor(data_dir=data_path, save_index_path=save_path)
     # get the tiles from the extent
     tiles = accessor.get_tiles_from_extent(xs, ys)
     accessor.get_index()
+
     # plot the tiles
     plot_tiles(tiles, 'tiles from extent', extent=(xs[0], xs[1], ys[0], ys[1]))
 
@@ -37,19 +41,26 @@ def get_tiles_from_shapefile():
     shapefile_path = Path(__file__).parent.joinpath('example_inputs/example_polygon.shp')
     # define path to the directory containing the data
     data_dir = Path(__file__).parent.joinpath('dummy_dataset')
-    # define path of where to save the index (make sure you make the directory for this to sit in)
-    save_path = Path(__file__).parent.joinpath('outputs')
-    save_path.mkdir(parents=True, exist_ok=True)
-    save_path = save_path.joinpath('index_for_shapefile.hdf')
+
+    # directory to save the outputs / index -- defaults to Downloads
+    outdir = Path.home().joinpath('Downloads', 'easy_nc_accessor_examples',
+                                  'get_relevant_tiles')
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    # define path of where to save the index
+    save_path = outdir.joinpath('index_for_shapefile.hdf')
     # create the TileIndexAccessor object
     accessor = TileIndexAccessor(data_dir=data_dir, save_index_path=save_path)
     # get the tiles from the shapefile
     tiles = accessor.get_tiles_from_shapefile(shapefile_path)
     accessor.get_index()
     # plot the tiles
-    plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)
+    plot_tiles(tiles, 'tiles from shapefile', shapefile_path=shapefile_path)  # todo use the class to support this.
 
-def plot_tiles(tiles, name, extent=None, shapefile_path=None):
+    # todo export tiles to the shapefile.
+
+
+def plot_tiles(tiles, name, extent=None, shapefile_path=None):  # todo move this into the class
     """
     Function to plot the tiles and the shapefile or extent.
     """

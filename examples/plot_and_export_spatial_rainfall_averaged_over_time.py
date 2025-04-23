@@ -7,11 +7,18 @@ from pathlib import Path
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 
+
 def plot_and_export_spatial_rainfall_averaged_over_time():
     """
     This is an example of how to calculate the mean rainfall over time in a tile, plot the results and export as a GeoTIFF.
     """
+    # directory to save the outputs / index -- defaults to Downloads
+    outdir = Path.home().joinpath('Downloads', 'easy_nc_accessor_examples',
+                                  'plot_and_export_spatial_rainfall_averaged_over_time')
+    outdir.mkdir(parents=True, exist_ok=True)
+
     # choose one of the data files to use
+    # note that Path(__file__).parent is the directory of this file
     tile_data_path = Path(__file__).parent.joinpath('dummy_dataset/559_2000-07-01_2003-06-30.nc')
     # create data accessor
     accessor = CompressedSpatialAccessor(tile_data_path)
@@ -29,11 +36,12 @@ def plot_and_export_spatial_rainfall_averaged_over_time():
     ax.set_xlabel('NZTM X (m)')
     ax.set_ylabel('NZTM Y (m)')
     plt.show()
-    # export the mean rainfall as a GeoTIFF
-    raster_path = Path(__file__).parent.joinpath('outputs')
-    raster_path.mkdir(parents=True, exist_ok=True)
-    raster_path = raster_path.joinpath('mean_rainfall_spatial_mean.tif')
-    accessor.spatial_2d_to_raster(raster_path, mean_rainfall_2d)
 
-if __name__ == "__main__":
+    # export the mean rainfall as a GeoTIFF
+    raster_path = outdir.joinpath('mean_rainfall_spatial_mean.tif')
+    accessor.spatial_2d_to_raster(raster_path, mean_rainfall_2d)
+    print('Exported mean rainfall to', raster_path)
+
+
+if __name__ == "__main__":  # only run this if the script is run directly
     plot_and_export_spatial_rainfall_averaged_over_time()
