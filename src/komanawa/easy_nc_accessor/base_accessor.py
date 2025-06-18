@@ -601,6 +601,26 @@ class _BaseAccessor(_common_functions):
                                attribute)
         return out
 
+    @staticmethod
+    def merge_rasters(outpath, raster_paths):
+        """
+        A simple utility to combine multiple rasters into a single TIFF file. assumes that all rasters have the same
+        CRS etc.
+
+        :param outpath: path to save the combined raster
+        :param raster_paths: list of paths to rasters to combine
+        """
+        outpath = Path(outpath)
+        ds_lst = []
+        for raster in raster_paths:
+            ds = gdal.Warp('', raster, format='vrt', )
+            ds_lst.append(ds)
+            del ds
+        dataset = gdal.BuildVRT('', ds_lst)
+        ds1 = gdal.Translate(str(outpath), dataset)
+        del ds1
+        del dataset
+
     def _burn_layer(self, cols, rows, pixelWidth, pixelHeight, x_min, y_min, use_layer, alltouched, path, attr):
         target_ds = gdal.GetDriverByName('MEM').Create('',
                                                        cols, rows,
