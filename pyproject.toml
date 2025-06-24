@@ -22,7 +22,7 @@ readme = "README.rst"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
-    'numpy<2.0',
+    'numpy>=1.26',
     'pandas',
     'netcdf4',
     'geopandas',

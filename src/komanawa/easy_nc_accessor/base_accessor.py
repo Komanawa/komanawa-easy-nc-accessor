@@ -57,25 +57,26 @@ class _common_functions:
         sourceRaster = None  # kill the raster
 
     def _plot_basemap(self, ax, base_map_path):
-        ds = gdal.Open(str(base_map_path))
-        width = ds.RasterXSize
-        height = ds.RasterYSize
-        gt = ds.GetGeoTransform()
-        minx = gt[0]
-        miny = gt[3] + width * gt[4] + height * gt[5]
-        maxx = gt[0] + width * gt[1] + height * gt[2]
-        maxy = gt[3]
+        if base_map_path is not None:
+            ds = gdal.Open(str(base_map_path))
+            width = ds.RasterXSize
+            height = ds.RasterYSize
+            gt = ds.GetGeoTransform()
+            minx = gt[0]
+            miny = gt[3] + width * gt[4] + height * gt[5]
+            maxx = gt[0] + width * gt[1] + height * gt[2]
+            maxy = gt[3]
 
-        image = ds.ReadAsArray()
-        if image.ndim == 3:  # if a rgb image then plot as greyscale
-            image = image.mean(axis=0)
-            image = image.astype(float)
-            image[image == 0] = np.nan
-        ll = (minx, miny)
-        ur = (maxx, maxy)
+            image = ds.ReadAsArray()
+            if image.ndim == 3:  # if a rgb image then plot as greyscale
+                image = image.mean(axis=0)
+                image = image.astype(float)
+                image[image == 0] = np.nan
+            ll = (minx, miny)
+            ur = (maxx, maxy)
 
-        ax.imshow(image, extent=[ll[0], ur[0], ll[1], ur[1]], cmap='gray', vmin=0, vmax=255)
-        ds = None
+            ax.imshow(image, extent=[ll[0], ur[0], ll[1], ur[1]], cmap='gray', vmin=0, vmax=255)
+            ds = None
 
 
 class TileIndexAccessor(_common_functions):
@@ -303,6 +304,9 @@ class TileIndexAccessor(_common_functions):
                 ax.text(np.mean(tile[['tile_xmin', 'tile_xmax']]), np.mean(tile[['tile_ymin', 'tile_ymax']]),
                         tile['tile_number'],
                         bbox=dict(facecolor='white', alpha=0.5), ha='center', va='center')
+
+        ax.set_xlim(keep_index['tile_xmin'].min()-1000, keep_index['tile_xmax'].max()+1000)
+        ax.set_ylim(keep_index['tile_ymin'].min()-1000, keep_index['tile_ymax'].max()+1000)
         return fig, ax
 
 
