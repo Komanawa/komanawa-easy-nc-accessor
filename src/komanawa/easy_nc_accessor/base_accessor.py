@@ -826,8 +826,8 @@ class CompressedSpatialAccessor(_BaseAccessor):
         xs = xs[active_index]
         ys = ys[active_index]
 
-        nztmx = np.full((len(nztmx), len(xs)), nztmx)
-        nztmy = np.full((len(nztmy), len(xs)), nztmy)
+        nztmx = np.full((len(nztmx), len(xs)), nztmx[:, np.newaxis])
+        nztmy = np.full((len(nztmy), len(xs)), nztmy[:, np.newaxis])
 
         dist_x = nztmx - xs
         dist_y = nztmy - ys
