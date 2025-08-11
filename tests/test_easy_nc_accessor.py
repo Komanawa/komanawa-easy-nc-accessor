@@ -127,6 +127,12 @@ class TestCompressedSpatialAccessor(unittest.TestCase):
         false_point = (0, 0)
         self.assertRaises(ValueError, accessor.get_closest_loc_to_point, *false_point)
 
+        both_xs = [example_point[0], 0]
+        both_ys = [example_point[1], 0]
+        locs = accessor.get_closest_loc_to_point(both_xs, both_ys, coords_out_domain='coerce')
+        assert locs[0] == expect_loc
+        assert locs[1] == -1, "Expected -1 for out-of-domain point"
+
     def test_get_lims(self):
 
         nc_path = example_data_dir.joinpath('559_2000-07-01_2003-06-30.nc')

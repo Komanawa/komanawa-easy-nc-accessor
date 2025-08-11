@@ -813,8 +813,11 @@ class CompressedSpatialAccessor(_BaseAccessor):
         if coords_out_domain == 'raise' and out_of_bounds.any():
             raise ValueError(f'coordinates at indexes {np.where(out_of_bounds)} are out of domain')
 
+
+        out = np.full(nztmx.shape, -1, dtype=int)
         if coords_out_domain == 'coerce' and out_of_bounds.any():
-            return -1
+            nztmx = nztmx[~out_of_bounds]
+            nztmy = nztmy[~out_of_bounds]
 
         xs, ys = self._get_grid_x_y(cell_centers=True)
         xs = xs.flatten()
@@ -831,7 +834,13 @@ class CompressedSpatialAccessor(_BaseAccessor):
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
         loc = np.nanargmin(dist, axis=1)
 
-        if return_single:
-            return loc[0]
+        if coords_out_domain == 'coerce' and out_of_bounds.any():
+            out[~out_of_bounds] = loc
+
         else:
-            return loc
+            out = loc
+
+        if return_single:
+            return out[0]
+        else:
+            return out
