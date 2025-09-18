@@ -29,7 +29,7 @@ def export_annual_sum_and_mean_at_point():
     data_accessor = CompressedSpatialAccessor(tile_path)
 
     # find the location of the point in the dataset
-    spatial_index = data_accessor.get_closest_loc_to_point(example_point[0], example_point[1])
+    spatial_index, dist = data_accessor.get_closest_loc_to_point(example_point[0], example_point[1])
 
     # load the dataset from the netCDF file
     with nc.Dataset(tile_path) as ds:  # this is a context manager that will close the dataset when done

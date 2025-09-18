@@ -78,6 +78,22 @@ Package Contents
 
 
 
+   .. py:method:: closest_point_active(nztmx, nztmy, coords_out_domain='raise')
+
+      get whether the closest point to the passed coordinates is active (has data) or inactive (no data)
+
+      :param nztmx: single or array of x coordinates
+      :param nztmy: single or array of y coordinates
+      :param coords_out_domain: ['raise' or 'pass'].  What to do if the coordinates are outside the domain
+
+      - 'raise': raise a ValueError
+      - 'pass': returns the closest index, but this may be WELL outside the domain
+
+      :return: active (boolean) or array of booleans
+      :return: distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points
+
+
+
    .. py:method:: get_2d_spatial_zero(dtype=float)
 
       get a 2d array of zeros with the same shape as the spatial 2d shape
@@ -99,7 +115,7 @@ Package Contents
 
    .. py:method:: get_closest_loc_to_point(nztmx, nztmy, coords_out_domain='raise')
 
-      get the closest spatial index(s) to a point in the spatial domain
+      get the closest ACTIVE spatial index(s) to a point in the spatial domain
 
       :param nztmx: single or array of x coordinates
       :param nztmy: single or array of y coordinates
@@ -109,10 +125,11 @@ Package Contents
       - 'coerce': return -1 for out of domain coords (note that this may still be a valid index, so care must be taken)
       - 'pass': returns the closest index, but this may be WELL outside the domain
 
-
       :return: index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points
 
               - note that this is the index of the spatial points (which does not include inactivate cells)
+
+      :return: distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points
 
 
 
@@ -121,6 +138,18 @@ Package Contents
       read the dataset spatial limits
 
       :return:  x_min, x_max, y_min, y_max
+
+
+
+   .. py:method:: merge_rasters(outpath, raster_paths)
+      :staticmethod:
+
+
+      A simple utility to combine multiple rasters into a single TIFF file. assumes that all rasters have the same
+      CRS etc.
+
+      :param outpath: path to save the combined raster
+      :param raster_paths: list of paths to rasters to combine
 
 
 
@@ -271,6 +300,25 @@ Package Contents
 
       :param xs: the x coordinates of the bounding box / extent.  the min/max of the passed x coordinates are used
       :param ys: the y coordinates of the bounding box / extent.  the min/max of the passed y coordinates are used
+      :return: dataframe of all tiles that fall within the shapefile. columns are:
+
+          * 'tile_path': pathlib.Path to the tile
+          * 'tile_number': the tile number.  This can be missing without causing an exception
+          * 'tile_xmin': the minimum x coordinate of the tile
+          * 'tile_ymin': the minimum y coordinate of the tile
+          * 'tile_xmax': the maximum x coordinate of the tile
+          * 'tile_ymax': the maximum y coordinate of the tile
+          * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+          * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
+
+
+
+   .. py:method:: get_tiles_from_point(x: float, y: float)
+
+      get the tile paths that contain a point.  If the point is on the edge of a tile, both tiles will be returned.
+
+      :param x: float x coordinate of the point
+      :param y: float y coordinate of the point
       :return: dataframe of all tiles that fall within the shapefile. columns are:
 
           * 'tile_path': pathlib.Path to the tile

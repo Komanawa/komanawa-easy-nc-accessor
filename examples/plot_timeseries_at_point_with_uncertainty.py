@@ -22,7 +22,7 @@ def plot_timeseries_at_point_with_uncertainty():
     data_accessor = CompressedSpatialAccessor(tile_path)
     # load the dataset from the netCDF file
     # find the location of the point in the dataset
-    spatial_index = data_accessor.get_closest_loc_to_point(example_point[0], example_point[1])
+    spatial_index, dist = data_accessor.get_closest_loc_to_point(example_point[0], example_point[1])
 
     with nc.Dataset(tile_path) as ds:  # this is a context manager that will close the dataset when done
         # get the data at the point

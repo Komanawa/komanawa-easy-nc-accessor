@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>komanawa.easy_nc_accessor.base_accessor &#8212; komanawa-easy-nc-accessor v0.0.1 documentation</title>
+    <title>komanawa.easy_nc_accessor.base_accessor &#8212; komanawa-easy-nc-accessor v0.0.3 documentation</title>
   
   
   
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=2fea6348"></script>
+    <script src="../../../../_static/documentation_options.js?v=bc6a6d3b"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/komanawa/easy_nc_accessor/base_accessor/index';</script>
@@ -122,7 +122,7 @@
     <script>document.write(`<img src="" class="logo__image only-dark" alt=""/>`);</script>
   
   
-    <p class="title logo__title">Easy-Nc-Accessor v0.0.1 Overview</p>
+    <p class="title logo__title">Easy-Nc-Accessor v0.0.3 Overview</p>
   
 </a></div>
     
@@ -450,6 +450,33 @@ on: 4/13/25</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.closest_point_active">
+<span class="sig-name descname"><span class="pre">closest_point_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nztmx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nztmy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_out_domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.closest_point_active" title="Link to this definition">#</a></dt>
+<dd><p>get whether the closest point to the passed coordinates is active (has data) or inactive (no data)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nztmx</strong> – single or array of x coordinates</p></li>
+<li><p><strong>nztmy</strong> – single or array of y coordinates</p></li>
+<li><p><strong>coords_out_domain</strong> – [‘raise’ or ‘pass’].  What to do if the coordinates are outside the domain</p></li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>‘raise’: raise a ValueError</p></li>
+<li><p>‘pass’: returns the closest index, but this may be WELL outside the domain</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>active (boolean) or array of booleans</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_2d_spatial_zero">
 <span class="sig-name descname"><span class="pre">get_2d_spatial_zero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_2d_spatial_zero" title="Link to this definition">#</a></dt>
 <dd><p>get a 2d array of zeros with the same shape as the spatial 2d shape</p>
@@ -478,7 +505,7 @@ on: 4/13/25</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_closest_loc_to_point">
 <span class="sig-name descname"><span class="pre">get_closest_loc_to_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nztmx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nztmy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_out_domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_closest_loc_to_point" title="Link to this definition">#</a></dt>
-<dd><p>get the closest spatial index(s) to a point in the spatial domain</p>
+<dd><p>get the closest ACTIVE spatial index(s) to a point in the spatial domain</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -501,6 +528,9 @@ on: 4/13/25</p>
 </ul>
 </p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -511,6 +541,21 @@ on: 4/13/25</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>x_min, x_max, y_min, y_max</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.merge_rasters">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_rasters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster_paths</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.merge_rasters" title="Link to this definition">#</a></dt>
+<dd><p>A simple utility to combine multiple rasters into a single TIFF file. assumes that all rasters have the same
+CRS etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outpath</strong> – path to save the combined raster</p></li>
+<li><p><strong>raster_paths</strong> – list of paths to rasters to combine</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -738,6 +783,34 @@ on: 4/13/25</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_point">
+<span class="sig-name descname"><span class="pre">get_tiles_from_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_point" title="Link to this definition">#</a></dt>
+<dd><p>get the tile paths that contain a point.  If the point is on the edge of a tile, both tiles will be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – float x coordinate of the point</p></li>
+<li><p><strong>y</strong> – float y coordinate of the point</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>dataframe of all tiles that fall within the shapefile. columns are:</p>
+<ul class="simple">
+<li><p>’tile_path’: pathlib.Path to the tile</p></li>
+<li><p>’tile_number’: the tile number.  This can be missing without causing an exception</p></li>
+<li><p>’tile_xmin’: the minimum x coordinate of the tile</p></li>
+<li><p>’tile_ymin’: the minimum y coordinate of the tile</p></li>
+<li><p>’tile_xmax’: the maximum x coordinate of the tile</p></li>
+<li><p>’tile_ymax’: the maximum y coordinate of the tile</p></li>
+<li><p>’start_date’: the start date of the tile (inclusive)   This can be missing without causing an exception</p></li>
+<li><p>’end_date’: the end date of the tile (inclusive)   This can be missing without causing an exception</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_shapefile">
 <span class="sig-name descname"><span class="pre">get_tiles_from_shapefile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_shapefile" title="Link to this definition">#</a></dt>
 <dd><p>get the tile paths from a shapefile</p>
@@ -835,10 +908,12 @@ on: 4/13/25</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.check_raster_crs"><code class="docutils literal notranslate"><span class="pre">check_raster_crs()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.check_shape_crs"><code class="docutils literal notranslate"><span class="pre">check_shape_crs()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.close"><code class="docutils literal notranslate"><span class="pre">close()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.closest_point_active"><code class="docutils literal notranslate"><span class="pre">closest_point_active()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_2d_spatial_zero"><code class="docutils literal notranslate"><span class="pre">get_2d_spatial_zero()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_active_index"><code class="docutils literal notranslate"><span class="pre">get_active_index()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_closest_loc_to_point"><code class="docutils literal notranslate"><span class="pre">get_closest_loc_to_point()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.get_xlim_ylim"><code class="docutils literal notranslate"><span class="pre">get_xlim_ylim()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.merge_rasters"><code class="docutils literal notranslate"><span class="pre">merge_rasters()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.plot_2d"><code class="docutils literal notranslate"><span class="pre">plot_2d()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.show"><code class="docutils literal notranslate"><span class="pre">show()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.CompressedSpatialAccessor.spatial_1d_to_spatial_2d"><code class="docutils literal notranslate"><span class="pre">spatial_1d_to_spatial_2d()</span></code></a></li>
@@ -852,6 +927,7 @@ on: 4/13/25</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.export_tiles_to_shapefile"><code class="docutils literal notranslate"><span class="pre">export_tiles_to_shapefile()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_index"><code class="docutils literal notranslate"><span class="pre">get_index()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_extent"><code class="docutils literal notranslate"><span class="pre">get_tiles_from_extent()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_point"><code class="docutils literal notranslate"><span class="pre">get_tiles_from_point()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.get_tiles_from_shapefile"><code class="docutils literal notranslate"><span class="pre">get_tiles_from_shapefile()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#komanawa.easy_nc_accessor.base_accessor.TileIndexAccessor.plot_tiles"><code class="docutils literal notranslate"><span class="pre">plot_tiles()</span></code></a></li>
 </ul>
