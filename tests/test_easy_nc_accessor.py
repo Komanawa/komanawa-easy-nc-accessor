@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 from komanawa.easy_nc_accessor import TileIndexAccessor, CompressedSpatialAccessor
 from osgeo import gdal
+
 example_data_dir = Path(__file__).parents[1].joinpath('examples/dummy_dataset')
 example_inputs = Path(__file__).parents[1].joinpath('examples/example_inputs')
 from examples.example_inputs import example_point
@@ -28,13 +29,13 @@ class TestTileIndexAccessor(unittest.TestCase):
             assert np.allclose(data[['tile_xmin', 'tile_ymin', 'tile_xmax', 'tile_ymax']].values, expect_bounds)
             assert all(data['start_date'] == '2000-07-01')
             assert all(data['end_date'] == '2003-06-30')
-            expect_paths = ['559_2000-07-01_2003-06-30.nc', '560_2000-07-01_2003-06-30.nc', '582_2000-07-01_2003-06-30.nc', '583_2000-07-01_2003-06-30.nc']
+            expect_paths = ['559_2000-07-01_2003-06-30.nc', '560_2000-07-01_2003-06-30.nc',
+                            '582_2000-07-01_2003-06-30.nc', '583_2000-07-01_2003-06-30.nc']
             got_paths = [e.name for e in data['tile_path']]
             assert got_paths == expect_paths
 
     def test_get_tiles_from_extent(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-
             tmpdir = Path(tmpdir)
 
             xs = [1305169, 1368943]
@@ -43,11 +44,13 @@ class TestTileIndexAccessor(unittest.TestCase):
             accessor = TileIndexAccessor(data_dir=data_path, save_index_path=tmpdir.joinpath('index.hdf'))
             tiles = accessor.get_tiles_from_extent(xs, ys)
             assert len(tiles) == 4
+            assert set(tiles.tile_number) == {559, 560, 582, 583}
 
             xs = [1373999, 1376058]
             ys = [4957261, 4956204]
             tiles = accessor.get_tiles_from_extent(xs, ys)
             assert len(tiles) == 1
+            assert set(tiles.tile_number) == {583}
 
     def test_get_tiles_from_shapefile(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -62,6 +65,18 @@ class TestTileIndexAccessor(unittest.TestCase):
             tiles = accessor.get_tiles_from_shapefile(shapefile_path)
             assert len(tiles) == 4
 
+    def test_get_tiles_from_point(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+
+            xs = 1331918
+            ys = 5023423
+            data_path = example_data_dir
+            accessor = TileIndexAccessor(data_dir=data_path, save_index_path=tmpdir.joinpath('index.hdf'))
+            tiles = accessor.get_tiles_from_point(xs, ys)
+            assert tiles.tile_number.unique() == [559]
+
+
 
 class TestCompressedSpatialAccessor(unittest.TestCase):
 
@@ -71,12 +86,14 @@ class TestCompressedSpatialAccessor(unittest.TestCase):
         accessor = CompressedSpatialAccessor(nc_path)
 
         with nc.Dataset(nc_path) as ds:
-            data = np.array(ds.variables['rainfall'][:, :,1])
+            data = np.array(ds.variables['rainfall'][:, :, 1])
         data = np.nanmean(data, axis=0) * 365
-        fig1, ax = accessor.plot_2d(accessor.spatial_1d_to_spatial_2d(data), base_map_path=example_inputs.joinpath('nz-topo250-maps.jpg'),
-                                   title='rainfall (mm/yr)')
+        fig1, ax = accessor.plot_2d(accessor.spatial_1d_to_spatial_2d(data),
+                                    base_map_path=example_inputs.joinpath('nz-topo250-maps.jpg'),
+                                    title='rainfall (mm/yr)')
         fig2, ax = plt.subplots()
-        fig, ax = accessor.plot_2d(accessor.spatial_1d_to_spatial_2d(data), base_map_path=example_inputs.joinpath('nz-topo250-maps.jpg'),
+        fig, ax = accessor.plot_2d(accessor.spatial_1d_to_spatial_2d(data),
+                                   base_map_path=example_inputs.joinpath('nz-topo250-maps.jpg'),
                                    title='rainfall (mm/yr)', vmin='10th', vmax='90th', ax=ax, contour=True,
                                    label_contours=True, contour_levels=20)
         assert fig is fig2
@@ -120,12 +137,44 @@ class TestCompressedSpatialAccessor(unittest.TestCase):
 
         nc_path = example_data_dir.joinpath('559_2000-07-01_2003-06-30.nc')
         accessor = CompressedSpatialAccessor(nc_path)
-        loc = accessor.get_closest_loc_to_point(*example_point)
+        loc, dist = accessor.get_closest_loc_to_point(*example_point)
         expect_loc = 1019
         assert loc == expect_loc
+        # check dists
+        assert np.isclose(dist, 174.77, atol=0.01)
 
         false_point = (0, 0)
         self.assertRaises(ValueError, accessor.get_closest_loc_to_point, *false_point)
+
+        both_xs = [example_point[0], 0]
+        both_ys = [example_point[1], 0]
+        locs, dist = accessor.get_closest_loc_to_point(both_xs, both_ys, coords_out_domain='coerce')
+        assert locs[0] == expect_loc
+        assert locs[1] == -1, "Expected -1 for out-of-domain point"
+        # check dists
+        assert np.allclose(dist, np.array([174.77127911, np.nan]), equal_nan=True)
+
+    def test_closest_point_active(self):
+
+        nc_path = example_data_dir.joinpath('559_2000-07-01_2003-06-30.nc')
+        accessor = CompressedSpatialAccessor(nc_path)
+        active, dist = accessor.closest_point_active(*example_point)
+        assert active
+        assert np.isclose(dist, 174.77, atol=0.01)
+
+        false_point = (0, 0)
+        self.assertRaises(ValueError, accessor.closest_point_active, *false_point)
+
+        inactive_point = (1308418 + 10, 5047923+10)
+
+        both_xs = [example_point[0], 0, inactive_point[0]]
+        both_ys = [example_point[1], 0, inactive_point[1]]
+        locs, dist = accessor.closest_point_active(both_xs, both_ys, coords_out_domain='coerce')
+        assert locs[0]
+        assert not locs[1], "Expected False for out-of-domain point"
+        assert not locs[2], "Expected False for inactive point"
+        # check dists
+        assert np.allclose(dist, np.array([174.77127911, np.nan, 200**(0.5)]), equal_nan=True)
 
     def test_get_lims(self):
 

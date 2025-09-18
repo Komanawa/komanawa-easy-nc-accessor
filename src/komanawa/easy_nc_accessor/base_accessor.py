@@ -206,6 +206,34 @@ class TileIndexAccessor(_common_functions):
 
         return path_index.loc[overlap]
 
+    def get_tiles_from_point(self, x: float, y: float):
+        """
+        get the tile paths that contain a point.  If the point is on the edge of a tile, both tiles will be returned.
+
+        :param x: float x coordinate of the point
+        :param y: float y coordinate of the point
+        :return: dataframe of all tiles that fall within the shapefile. columns are:
+
+            * 'tile_path': pathlib.Path to the tile
+            * 'tile_number': the tile number.  This can be missing without causing an exception
+            * 'tile_xmin': the minimum x coordinate of the tile
+            * 'tile_ymin': the minimum y coordinate of the tile
+            * 'tile_xmax': the maximum x coordinate of the tile
+            * 'tile_ymax': the maximum y coordinate of the tile
+            * 'start_date': the start date of the tile (inclusive)   This can be missing without causing an exception
+            * 'end_date': the end date of the tile (inclusive)   This can be missing without causing an exception
+        """
+        assert pd.api.types.is_number(x)
+        assert pd.api.types.is_number(y)
+        path_index = self.get_index()
+
+        overlap = ((x <= path_index['tile_xmax'])
+                   & (x >= path_index['tile_xmin'])
+                   & (y <= path_index['tile_ymax'])
+                   & (y >= path_index['tile_ymin']))
+
+        return path_index.loc[overlap]
+
     def get_tiles_from_shapefile(self, shapefile_path, check_crs=True):
         """
         get the tile paths from a shapefile
@@ -305,8 +333,8 @@ class TileIndexAccessor(_common_functions):
                         tile['tile_number'],
                         bbox=dict(facecolor='white', alpha=0.5), ha='center', va='center')
 
-        ax.set_xlim(keep_index['tile_xmin'].min()-1000, keep_index['tile_xmax'].max()+1000)
-        ax.set_ylim(keep_index['tile_ymin'].min()-1000, keep_index['tile_ymax'].max()+1000)
+        ax.set_xlim(keep_index['tile_xmin'].min() - 1000, keep_index['tile_xmax'].max() + 1000)
+        ax.set_ylim(keep_index['tile_ymin'].min() - 1000, keep_index['tile_ymax'].max() + 1000)
         return fig, ax
 
 
@@ -784,7 +812,7 @@ class CompressedSpatialAccessor(_BaseAccessor):
 
     def get_closest_loc_to_point(self, nztmx, nztmy, coords_out_domain='raise'):
         """
-        get the closest spatial index(s) to a point in the spatial domain
+        get the closest ACTIVE spatial index(s) to a point in the spatial domain
 
         :param nztmx: single or array of x coordinates
         :param nztmy: single or array of y coordinates
@@ -794,10 +822,11 @@ class CompressedSpatialAccessor(_BaseAccessor):
         - 'coerce': return -1 for out of domain coords (note that this may still be a valid index, so care must be taken)
         - 'pass': returns the closest index, but this may be WELL outside the domain
 
-
         :return: index(s) of the closest point(s). an integer if single point, or an array of integers if multiple points
 
                 - note that this is the index of the spatial points (which does not include inactivate cells)
+
+        :return: distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points
         """
         return_single = False
         if pd.api.types.is_number(nztmx):
@@ -813,8 +842,11 @@ class CompressedSpatialAccessor(_BaseAccessor):
         if coords_out_domain == 'raise' and out_of_bounds.any():
             raise ValueError(f'coordinates at indexes {np.where(out_of_bounds)} are out of domain')
 
+        out = np.full(nztmx.shape, -1, dtype=int)
+        out_dist = np.full(nztmx.shape, np.nan, dtype=float)
         if coords_out_domain == 'coerce' and out_of_bounds.any():
-            return -1
+            nztmx = nztmx[~out_of_bounds]
+            nztmy = nztmy[~out_of_bounds]
 
         xs, ys = self._get_grid_x_y(cell_centers=True)
         xs = xs.flatten()
@@ -823,15 +855,81 @@ class CompressedSpatialAccessor(_BaseAccessor):
         xs = xs[active_index]
         ys = ys[active_index]
 
-        nztmx = np.full((len(nztmx), len(xs)), nztmx)
-        nztmy = np.full((len(nztmy), len(xs)), nztmy)
+        nztmx = np.full((len(nztmx), len(xs)), nztmx[:, np.newaxis])
+        nztmy = np.full((len(nztmy), len(xs)), nztmy[:, np.newaxis])
 
         dist_x = nztmx - xs
         dist_y = nztmy - ys
         dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
         loc = np.nanargmin(dist, axis=1)
+        dist0 = np.nanmin(dist, axis=1)
+
+        if coords_out_domain == 'coerce' and out_of_bounds.any():
+            out[~out_of_bounds] = loc
+            out_dist[~out_of_bounds] = dist0
+
+        else:
+            out = loc
+            out_dist = dist0
 
         if return_single:
-            return loc[0]
+            return out[0], out_dist[0]
         else:
-            return loc
+            return out, out_dist
+
+    def closest_point_active(self, nztmx, nztmy, coords_out_domain='raise'):
+        """
+        get whether the closest point to the passed coordinates is active (has data) or inactive (no data)
+
+        :param nztmx: single or array of x coordinates
+        :param nztmy: single or array of y coordinates
+        :param coords_out_domain: ['raise' or 'pass'].  What to do if the coordinates are outside the domain
+
+        - 'raise': raise a ValueError
+        - 'pass': returns the closest index, but this may be WELL outside the domain
+
+        :return: active (boolean) or array of booleans
+        :return: distance(s) to the closest point(s). a float if single point, or an array of floats if multiple points
+        """
+        return_single = False
+        if pd.api.types.is_number(nztmx):
+            return_single = True
+
+        nztmx = np.atleast_1d(nztmx)
+        nztmy = np.atleast_1d(nztmy)
+        assert nztmx.shape == nztmy.shape, f'{nztmx.shape=} must match {nztmy.shape=}'
+
+        xmin, xmax, ymin, ymax = self.get_xlim_ylim()
+
+        out_of_bounds = ((nztmx < xmin) | (nztmx > xmax) | (nztmy < ymin) | (nztmy > ymax))
+        if coords_out_domain == 'raise' and out_of_bounds.any():
+            raise ValueError(f'coordinates at indexes {np.where(out_of_bounds)} are out of domain')
+        out = np.full(nztmx.shape, False, dtype=bool)
+        out_dist = np.full(nztmx.shape, np.nan, dtype=float)
+        if coords_out_domain == 'coerce' and out_of_bounds.any():
+            nztmx = nztmx[~out_of_bounds]
+            nztmy = nztmy[~out_of_bounds]
+
+
+        xs, ys = self._get_grid_x_y(cell_centers=True)
+        xs = xs.flatten()
+        ys = ys.flatten()
+        active_index = self.get_active_index().flatten()
+
+        nztmx = np.full((len(nztmx), len(xs)), nztmx[:, np.newaxis])
+        nztmy = np.full((len(nztmy), len(xs)), nztmy[:, np.newaxis])
+
+        dist_x = nztmx - xs
+        dist_y = nztmy - ys
+        dist = np.sqrt(dist_x ** 2 + dist_y ** 2)
+        loc = np.nanargmin(dist, axis=1)
+        dist0 = np.nanmin(dist, axis=1)
+        out0 = active_index[loc]
+        out[~out_of_bounds] = out0
+        out_dist[~out_of_bounds] = dist0
+
+
+        if return_single:
+            return out[0], out_dist[0]
+        else:
+            return out, out_dist
