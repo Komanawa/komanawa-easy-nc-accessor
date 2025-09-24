@@ -623,7 +623,7 @@ class _BaseAccessor(_common_functions):
         burn a shapefile to a 2d array of the same shape as the spatial 2d shape
 
         :param shp_path: path to the shapefile
-        :param attribute: the attribute to burn (e.g. shapefile field name/column name)
+        :param attribute: the attribute to burn (e.g. shapefile field name/column name).  Note this attribute must be numeric (int or float) areas not covered by the shapefile will be np.nan
         :param alltouched: boolean if True all pixels touched by the shapefile are burned, if False only pixels whose center is within the polygon or that are selected by Bresenham's line algorithm are burned.
         :param check_crs: boolean if True check the crs of the shapefile
         :return: np.ndarray of the same shape as the spatial 2d shape

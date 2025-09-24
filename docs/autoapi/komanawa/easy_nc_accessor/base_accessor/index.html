@@ -602,7 +602,7 @@ CRS etc.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>shp_path</strong> – path to the shapefile</p></li>
-<li><p><strong>attribute</strong> – the attribute to burn (e.g. shapefile field name/column name)</p></li>
+<li><p><strong>attribute</strong> – the attribute to burn (e.g. shapefile field name/column name).  Note this attribute must be numeric (int or float) areas not covered by the shapefile will be np.nan</p></li>
 <li><p><strong>alltouched</strong> – boolean if True all pixels touched by the shapefile are burned, if False only pixels whose center is within the polygon or that are selected by Bresenham’s line algorithm are burned.</p></li>
 <li><p><strong>check_crs</strong> – boolean if True check the crs of the shapefile</p></li>
 </ul>
