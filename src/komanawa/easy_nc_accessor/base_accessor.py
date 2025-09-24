@@ -114,7 +114,7 @@ class TileIndexAccessor(_common_functions):
         assert self.save_index_path.parent.exists(), f'save_index_path parent {self.save_index_path.parent} does not exist'
         assert self.save_index_path.suffix == '.hdf', f'save_index_path {self.save_index_path} must be a .hdf file'
 
-    def get_index(self, recalc=False):
+    def get_index(self, recalc=False)->pd.DataFrame:
         """
         get / make a tile index from the netcdf files in the data_dir
 
@@ -173,7 +173,7 @@ class TileIndexAccessor(_common_functions):
         data['end_date'] = pd.to_datetime(data['end_date'])
         return data
 
-    def get_tiles_from_extent(self, xs, ys):
+    def get_tiles_from_extent(self, xs, ys) -> pd.DataFrame:
         """
         get the tile paths from a bounding box
 
@@ -206,7 +206,7 @@ class TileIndexAccessor(_common_functions):
 
         return path_index.loc[overlap]
 
-    def get_tiles_from_point(self, x: float, y: float):
+    def get_tiles_from_point(self, x: float, y: float)->pd.DataFrame:
         """
         get the tile paths that contain a point.  If the point is on the edge of a tile, both tiles will be returned.
 
@@ -234,7 +234,7 @@ class TileIndexAccessor(_common_functions):
 
         return path_index.loc[overlap]
 
-    def get_tiles_from_shapefile(self, shapefile_path, check_crs=True):
+    def get_tiles_from_shapefile(self, shapefile_path, check_crs=True)->pd.DataFrame:
         """
         get the tile paths from a shapefile
 
@@ -293,7 +293,7 @@ class TileIndexAccessor(_common_functions):
     def plot_tiles(self, tiles=None, basemap_path=None, ax=None, figsize=(10, 10),
                    linewidth=4,
                    linecolor='r',
-                   label_tiles=True):
+                   label_tiles=True)->tuple[plt.Figure, plt.Axes]:
         """
         plot the tiles on an optional basemap
 
@@ -376,7 +376,7 @@ class _BaseAccessor(_common_functions):
         self.loc_x_name = loc_x_name
         self.loc_y_name = loc_y_name
 
-    def get_active_index(self):
+    def get_active_index(self)->np.ndarray:
         """
         read the active index of the dataset, this is a boolean 2d array of the same shape as the spatial 2d shape.
 
@@ -389,7 +389,7 @@ class _BaseAccessor(_common_functions):
             active_index = np.array(active_index, dtype=bool)
         return active_index
 
-    def get_xlim_ylim(self):
+    def get_xlim_ylim(self)->tuple[float, float, float, float]:
         """
         read the dataset spatial limits
 
@@ -444,12 +444,12 @@ class _BaseAccessor(_common_functions):
             raise ValueError(f'dtype: {raw_dt} not acceptable. Acceptable values: {type_mapper}')
         return dtype
 
-    def get_2d_spatial_zero(self, dtype=float):
+    def get_2d_spatial_zero(self, dtype=float)->np.ndarray:
         """
         get a 2d array of zeros with the same shape as the spatial 2d shape
 
         :param dtype: data type of the array
-        :return:
+        :return: 2d array of zeros
         """
 
         return np.zeros(self.spatial_2d_shape, dtype=dtype)
@@ -462,7 +462,7 @@ class _BaseAccessor(_common_functions):
         :param array: array to save (must be 2d model array)
         :param dtype: gdal data type to save as
         :param compression: boolean if True use compression (LZW, options = 'COMPRESS=LZW', 'PREDICTOR={p}', 'TILED=YES') where p=2 for int and 3 for float
-        :return:
+        :return: None
         """
         array = deepcopy(array)
         dtype = self._get_gdal_dtype(dtype)
@@ -535,7 +535,7 @@ class _BaseAccessor(_common_functions):
                 cbarlabelpad=15, contour=False, norm=None,
                 contour_levels=None, cmap='plasma',
                 label_contours=False, contour_label_format='%1.1f',
-                figsize=(10, 10), **kwargs):
+                figsize=(10, 10), **kwargs)->tuple[plt.Figure, plt.Axes]:
         """
         Plot a 2D array with a color map and optional contours.
 
@@ -618,7 +618,16 @@ class _BaseAccessor(_common_functions):
 
         return fig, ax
 
-    def shapefile_to_spatial_2d(self, shp_path, attribute, alltouched=True, check_crs=True):
+    def shapefile_to_spatial_2d(self, shp_path, attribute, alltouched=True, check_crs=True)->np.ndarray:
+        """
+        burn a shapefile to a 2d array of the same shape as the spatial 2d shape
+
+        :param shp_path: path to the shapefile
+        :param attribute: the attribute to burn (e.g. shapefile field name/column name)
+        :param alltouched: boolean if True all pixels touched by the shapefile are burned, if False only pixels whose center is within the polygon or that are selected by Bresenham's line algorithm are burned.
+        :param check_crs: boolean if True check the crs of the shapefile
+        :return: np.ndarray of the same shape as the spatial 2d shape
+        """
 
         if check_crs:
             self.check_shape_crs(shp_path)
@@ -641,6 +650,7 @@ class _BaseAccessor(_common_functions):
 
         :param outpath: path to save the combined raster
         :param raster_paths: list of paths to rasters to combine
+        :return: None
         """
         outpath = Path(outpath)
         ds_lst = []
@@ -776,7 +786,7 @@ class CompressedSpatialAccessor(_BaseAccessor):
     This supports easy access to compressed spatial datasets.  That is data which has n dimensions with only 1 dimension of space.  For example, this could be a 2d Dataset of time, space.  Where the "space" dimension has point values (e.g. unique x,y).  This is opposed to an uncompressed spatial dataset which would have n dimensions with 2 dimensions of space (x, y)
     """
 
-    def spatial_1d_to_spatial_2d(self, array, missing_value=np.nan):
+    def spatial_1d_to_spatial_2d(self, array, missing_value=np.nan) -> np.ndarray:
         """
         convert a 1d (collapsed) spatial array to a 2d spatial array
 
@@ -799,7 +809,7 @@ class CompressedSpatialAccessor(_BaseAccessor):
         out[active_index] = array
         return out
 
-    def spatial_2d_to_spatial_1d(self, array):
+    def spatial_2d_to_spatial_1d(self, array)->np.ndarray:
         """
         convert a 2d spatial array to a 1d (collapsed) spatial array
 
