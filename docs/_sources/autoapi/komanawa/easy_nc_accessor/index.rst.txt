@@ -94,16 +94,16 @@ Package Contents
 
 
 
-   .. py:method:: get_2d_spatial_zero(dtype=float)
+   .. py:method:: get_2d_spatial_zero(dtype=float) -> numpy.ndarray
 
       get a 2d array of zeros with the same shape as the spatial 2d shape
 
       :param dtype: data type of the array
-      :return:
+      :return: 2d array of zeros
 
 
 
-   .. py:method:: get_active_index()
+   .. py:method:: get_active_index() -> numpy.ndarray
 
       read the active index of the dataset, this is a boolean 2d array of the same shape as the spatial 2d shape.
 
@@ -133,7 +133,7 @@ Package Contents
 
 
 
-   .. py:method:: get_xlim_ylim()
+   .. py:method:: get_xlim_ylim() -> tuple[float, float, float, float]
 
       read the dataset spatial limits
 
@@ -150,10 +150,11 @@ Package Contents
 
       :param outpath: path to save the combined raster
       :param raster_paths: list of paths to rasters to combine
+      :return: None
 
 
 
-   .. py:method:: plot_2d(array, vmin=None, vmax=None, title=None, ax=None, color_bar=True, base_map_path=None, cbar_lab=None, cbarlabelpad=15, contour=False, norm=None, contour_levels=None, cmap='plasma', label_contours=False, contour_label_format='%1.1f', figsize=(10, 10), **kwargs)
+   .. py:method:: plot_2d(array, vmin=None, vmax=None, title=None, ax=None, color_bar=True, base_map_path=None, cbar_lab=None, cbarlabelpad=15, contour=False, norm=None, contour_levels=None, cmap='plasma', label_contours=False, contour_label_format='%1.1f', figsize=(10, 10), **kwargs) -> tuple[matplotlib.pyplot.Figure, matplotlib.pyplot.Axes]
 
       Plot a 2D array with a color map and optional contours.
 
@@ -178,6 +179,18 @@ Package Contents
 
 
 
+   .. py:method:: shapefile_to_spatial_2d(shp_path, attribute, alltouched=True, check_crs=True) -> numpy.ndarray
+
+      burn a shapefile to a 2d array of the same shape as the spatial 2d shape
+
+      :param shp_path: path to the shapefile
+      :param attribute: the attribute to burn (e.g. shapefile field name/column name)
+      :param alltouched: boolean if True all pixels touched by the shapefile are burned, if False only pixels whose center is within the polygon or that are selected by Bresenham's line algorithm are burned.
+      :param check_crs: boolean if True check the crs of the shapefile
+      :return: np.ndarray of the same shape as the spatial 2d shape
+
+
+
    .. py:method:: show()
       :staticmethod:
 
@@ -188,7 +201,7 @@ Package Contents
 
 
 
-   .. py:method:: spatial_1d_to_spatial_2d(array, missing_value=np.nan)
+   .. py:method:: spatial_1d_to_spatial_2d(array, missing_value=np.nan) -> numpy.ndarray
 
       convert a 1d (collapsed) spatial array to a 2d spatial array
 
@@ -206,11 +219,11 @@ Package Contents
       :param array: array to save (must be 2d model array)
       :param dtype: gdal data type to save as
       :param compression: boolean if True use compression (LZW, options = 'COMPRESS=LZW', 'PREDICTOR={p}', 'TILED=YES') where p=2 for int and 3 for float
-      :return:
+      :return: None
 
 
 
-   .. py:method:: spatial_2d_to_spatial_1d(array)
+   .. py:method:: spatial_2d_to_spatial_1d(array) -> numpy.ndarray
 
       convert a 2d spatial array to a 1d (collapsed) spatial array
 
@@ -277,7 +290,7 @@ Package Contents
 
 
 
-   .. py:method:: get_index(recalc=False)
+   .. py:method:: get_index(recalc=False) -> pandas.DataFrame
 
       get / make a tile index from the netcdf files in the data_dir
 
@@ -294,7 +307,7 @@ Package Contents
 
 
 
-   .. py:method:: get_tiles_from_extent(xs, ys)
+   .. py:method:: get_tiles_from_extent(xs, ys) -> pandas.DataFrame
 
       get the tile paths from a bounding box
 
@@ -313,7 +326,7 @@ Package Contents
 
 
 
-   .. py:method:: get_tiles_from_point(x: float, y: float)
+   .. py:method:: get_tiles_from_point(x: float, y: float) -> pandas.DataFrame
 
       get the tile paths that contain a point.  If the point is on the edge of a tile, both tiles will be returned.
 
@@ -332,7 +345,7 @@ Package Contents
 
 
 
-   .. py:method:: get_tiles_from_shapefile(shapefile_path, check_crs=True)
+   .. py:method:: get_tiles_from_shapefile(shapefile_path, check_crs=True) -> pandas.DataFrame
 
       get the tile paths from a shapefile
 
@@ -351,7 +364,7 @@ Package Contents
 
 
 
-   .. py:method:: plot_tiles(tiles=None, basemap_path=None, ax=None, figsize=(10, 10), linewidth=4, linecolor='r', label_tiles=True)
+   .. py:method:: plot_tiles(tiles=None, basemap_path=None, ax=None, figsize=(10, 10), linewidth=4, linecolor='r', label_tiles=True) -> tuple[matplotlib.pyplot.Figure, matplotlib.pyplot.Axes]
 
       plot the tiles on an optional basemap
 
