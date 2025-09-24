@@ -262,7 +262,7 @@ class TileIndexAccessor(_common_functions):
 
     def export_tiles_to_shapefile(self, outpath, tiles=None):
         """
-        Export the tile extents to a shapefile
+        Export some or all tile extents to a shapefile
 
         :param outpath: path to save the shapefile
         :param tiles: None (Export all) or tile numbers to export.

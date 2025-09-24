@@ -282,7 +282,7 @@ Package Contents
 
    .. py:method:: export_tiles_to_shapefile(outpath, tiles=None)
 
-      Export the tile extents to a shapefile
+      Export some or all tile extents to a shapefile
 
       :param outpath: path to save the shapefile
       :param tiles: None (Export all) or tile numbers to export.
